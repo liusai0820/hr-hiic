@@ -38,43 +38,55 @@ export default function LoginPage() {
     setSuccessMessage('');
     setError(null);
 
+    if (!email || !password) {
+      setError('请输入邮箱和密码');
+      return;
+    }
+
     try {
       setLoading(true);
       if (isLogin) {
         console.log('Login page - 尝试登录:', email);
         
-        // 添加超时处理，确保登录过程不会无限挂起
-        const loginPromise = signIn(email, password);
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => {
-            reject(new Error('登录请求超时，请稍后重试'));
-          }, 10000); // 10秒超时
-        });
+        // 直接在表单中显示状态
+        setSuccessMessage('正在登录，请稍候...');
         
         try {
-          await Promise.race([loginPromise, timeoutPromise]);
+          // 直接调用登录函数
+          await signIn(email, password);
           console.log('Login page - 登录成功');
           
-          // 登录成功后手动重定向
-          const redirect = searchParams.get('redirect') || '/';
-          console.log(`Login page - 手动重定向到: ${redirect}`);
+          // 登录成功后显示成功消息
+          setSuccessMessage('登录成功！正在跳转...');
           
-          // 使用直接的页面跳转，避免路由问题
-          window.location.replace(redirect);
-        } catch (timeoutErr) {
-          console.error('Login page - 登录超时:', timeoutErr);
-          throw timeoutErr;
+          // 延迟重定向，确保用户看到成功消息
+          setTimeout(() => {
+            const redirect = searchParams.get('redirect') || '/';
+            console.log(`Login page - 手动重定向到: ${redirect}`);
+            window.location.href = redirect;
+          }, 1000);
+        } catch (err: any) {
+          console.error('Login page - 登录失败:', err);
+          setError(err.message || '登录失败，请检查您的邮箱和密码');
+          setSuccessMessage('');
         }
       } else {
         console.log('Login page - 尝试注册:', email);
-        await signUp(email, password);
-        console.log('Login page - 注册成功');
-        setSuccessMessage('注册成功！您的账号正在等待管理员审批，审批通过后即可登录。');
-        setIsLogin(true); // 切换回登录模式
+        try {
+          await signUp(email, password);
+          console.log('Login page - 注册成功');
+          setSuccessMessage('注册成功！您的账号正在等待管理员审批，审批通过后即可登录。');
+          setIsLogin(true); // 切换回登录模式
+        } catch (err: any) {
+          console.error('Login page - 注册失败:', err);
+          setError(err.message || '注册失败，请稍后重试');
+          setSuccessMessage('');
+        }
       }
     } catch (err: any) {
-      console.error('Login page - 认证失败:', err);
-      setError(err.message || '认证失败，请稍后重试');
+      console.error('Login page - 认证过程出错:', err);
+      setError(err.message || '操作失败，请稍后重试');
+      setSuccessMessage('');
     } finally {
       setLoading(false);
     }

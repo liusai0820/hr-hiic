@@ -12,7 +12,7 @@ export interface AuthContextType {
   error: string | null;
   isApproved: boolean;
   initialized: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<any>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -195,7 +195,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (signInError) {
         console.error('AuthContext - 登录错误:', signInError);
-        throw new Error(signInError.message);
+        throw new Error(signInError.message || '登录失败，请检查您的邮箱和密码');
       }
 
       if (!data?.user) {
@@ -204,19 +204,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       console.log('AuthContext - 登录成功:', data.user.email);
-      console.log('AuthContext - 会话信息:', JSON.stringify({
-        user_id: data.user.id,
-        email: data.user.email,
-        session_expires: data.session?.expires_at ? new Date(data.session.expires_at * 1000).toISOString() : '未知'
-      }));
       
       // 立即设置用户状态
       setUser(data.user);
       
-      // 强制保存会话到localStorage
+      // 强制保存会话到localStorage和cookie
       if (data.session) {
         try {
-          // 创建一个简化的会话对象，避免循环引用问题
+          // 创建一个简化的会话对象
           const sessionData = {
             access_token: data.session.access_token,
             refresh_token: data.session.refresh_token,
@@ -232,60 +227,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           
           // 保存到localStorage
           localStorage.setItem('hiic-hr-auth', sessionStr);
+          localStorage.setItem('supabase.auth.token', sessionStr);
           console.log('AuthContext - 已保存会话到localStorage');
           
           // 设置cookie，有效期30天
           const expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
           document.cookie = `hiic-hr-auth=${encodeURIComponent(sessionStr)}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
+          document.cookie = `sb-access-token=${data.session.access_token}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
+          document.cookie = `sb-refresh-token=${data.session.refresh_token}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
+          document.cookie = `supabase.auth.token=${encodeURIComponent(sessionStr)}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
           console.log('AuthContext - 已保存会话到cookie');
           
           // 验证cookie是否设置成功
           console.log('AuthContext - 当前cookies:', document.cookie);
           
-          // 设置其他Supabase相关cookie
-          document.cookie = `sb-access-token=${data.session.access_token}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
-          document.cookie = `sb-refresh-token=${data.session.refresh_token}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
+          // 设置全局变量
+          if (typeof window !== 'undefined') {
+            window.hiicHrSession = sessionData;
+            window.hiicHrAuthInitialized = true;
+          }
         } catch (storageErr) {
           console.error('AuthContext - 保存会话失败:', storageErr);
         }
       }
       
-      // 检查是否有重定向参数
-      const urlParams = new URLSearchParams(window.location.search);
-      const redirectPath = urlParams.get('redirect');
-      
-      // 简化登录后的流程，直接重定向
-      console.log('AuthContext - 登录成功，准备重定向');
-      
-      // 添加一个小延迟，确保会话状态更新完成
-      setTimeout(() => {
-        if (redirectPath) {
-          console.log(`AuthContext - 重定向到: ${redirectPath}`);
-          // 使用replace而不是href，避免历史记录问题
-          window.location.replace(redirectPath);
-        } else {
-          console.log('AuthContext - 重定向到首页');
-          window.location.replace('/');
-        }
-      }, 300);
-      
-    } catch (err: any) {
-      console.error('AuthContext - 登录失败:', err);
-      let errorMessage = '登录失败，请稍后重试';
-      
-      if (err.message?.includes('Invalid login credentials')) {
-        errorMessage = '邮箱或密码错误';
-      } else if (err.message?.includes('Email not confirmed')) {
-        errorMessage = '请先验证您的邮箱';
-      } else if (err.message?.includes('rate limit')) {
-        errorMessage = '尝试次数过多，请稍后再试';
-      } else if (err.message?.includes('network')) {
-        errorMessage = '网络连接错误，请检查您的网络';
-      }
-      
-      setError(errorMessage);
-      setLoading(false); // 确保在错误情况下重置加载状态
-      throw new Error(errorMessage);
+      return data;
+    } catch (error: any) {
+      console.error('AuthContext - 登录过程中出错:', error);
+      setError(error.message || '登录失败，请稍后重试');
+      setUser(null);
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 

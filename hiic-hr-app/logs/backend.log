@@ -1,128 +1,120 @@
+INFO:     Will watch for changes in these directories: ['/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [39856] using StatReload
+/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/backend/app/services/chat_service.py:16: LangChainDeprecationWarning: Please see the migration guide at: https://python.langchain.com/docs/versions/migrating_memory/
+  self.memory = ConversationBufferMemory(
+正在从Supabase获取员工数据...
+获取到299条员工记录
+数据清洗完成
+清洗后数据样例 (第一条记录):
+  job_change: [']']
+  promotion: ['[', '高技术处外派人员-副部长', '2017/01产业发展一部副部长-部长', '2019/01任AI产业研究所所长、科技转化中心部长', '2021/06/18所长-副总工程师', '2022/08/30副总工程师-副主任', ']']
+  awards: ['[', '服务之星', '2014', '支撑奉献', '2015', '优秀干部', '2016', '优秀干部', '2017', '优秀干部', '2017', '深圳市发展改革委优秀个人', '2018', '优秀干部', '2018', '深圳市发展改革委先进工作者', '2019', '众志成城奖', '2021', '深圳市发展和改革委员会2021年度考核优秀等次事业单位工作人员', ']']
+DataFrame创建成功，列名: ['id', 'name', 'department', 'position', 'gender', 'birth_date', 'age', 'university', 'major', 'education', 'degree', 'first_work_date', 'first_work_month', 'hire_date', 'company_years', 'total_work_years', 'title', 'title_date_old', 'job_change', 'promotion', 'awards', 'is_qs100', 'current_age', 'is_qs50', 'is_985', 'current_work_years', 'current_company_years', 'sequence', 'section', 'ethnicity', 'recruitment_type', 'is_c9', 'is_211', 'major_category', 'team', 'is_business_dept', 'department_normalized', 'education_normalized', 'gender_normalized', 'created_at', '职称/技能_评定时间', '首次参加工作时间_（年假计算用）', '首次参加工作年月_（实际）']
+正在从Supabase获取员工数据...
+获取到299条员工记录
+数据清洗完成
+清洗后数据样例 (第一条记录):
+  job_change: [']']
+  promotion: ['[', '高技术处外派人员-副部长', '2017/01产业发展一部副部长-部长', '2019/01任AI产业研究所所长、科技转化中心部长', '2021/06/18所长-副总工程师', '2022/08/30副总工程师-副主任', ']']
+  awards: ['[', '服务之星', '2014', '支撑奉献', '2015', '优秀干部', '2016', '优秀干部', '2017', '优秀干部', '2017', '深圳市发展改革委优秀个人', '2018', '优秀干部', '2018', '深圳市发展改革委先进工作者', '2019', '众志成城奖', '2021', '深圳市发展和改革委员会2021年度考核优秀等次事业单位工作人员', ']']
+DataFrame创建成功，列名: ['id', 'name', 'department', 'position', 'gender', 'birth_date', 'age', 'university', 'major', 'education', 'degree', 'first_work_date', 'first_work_month', 'hire_date', 'company_years', 'total_work_years', 'title', 'title_date_old', 'job_change', 'promotion', 'awards', 'is_qs100', 'current_age', 'is_qs50', 'is_985', 'current_work_years', 'current_company_years', 'sequence', 'section', 'ethnicity', 'recruitment_type', 'is_c9', 'is_211', 'major_category', 'team', 'is_business_dept', 'department_normalized', 'education_normalized', 'gender_normalized', 'created_at', '职称/技能_评定时间', '首次参加工作时间_（年假计算用）', '首次参加工作年月_（实际）']
+正在从Supabase获取员工数据...
+获取到299条员工记录
+数据清洗完成
+清洗后数据样例 (第一条记录):
+  job_change: [']']
+  promotion: ['[', '高技术处外派人员-副部长', '2017/01产业发展一部副部长-部长', '2019/01任AI产业研究所所长、科技转化中心部长', '2021/06/18所长-副总工程师', '2022/08/30副总工程师-副主任', ']']
+  awards: ['[', '服务之星', '2014', '支撑奉献', '2015', '优秀干部', '2016', '优秀干部', '2017', '优秀干部', '2017', '深圳市发展改革委优秀个人', '2018', '优秀干部', '2018', '深圳市发展改革委先进工作者', '2019', '众志成城奖', '2021', '深圳市发展和改革委员会2021年度考核优秀等次事业单位工作人员', ']']
+DataFrame创建成功，列名: ['id', 'name', 'department', 'position', 'gender', 'birth_date', 'age', 'university', 'major', 'education', 'degree', 'first_work_date', 'first_work_month', 'hire_date', 'company_years', 'total_work_years', 'title', 'title_date_old', 'job_change', 'promotion', 'awards', 'is_qs100', 'current_age', 'is_qs50', 'is_985', 'current_work_years', 'current_company_years', 'sequence', 'section', 'ethnicity', 'recruitment_type', 'is_c9', 'is_211', 'major_category', 'team', 'is_business_dept', 'department_normalized', 'education_normalized', 'gender_normalized', 'created_at', '职称/技能_评定时间', '首次参加工作时间_（年假计算用）', '首次参加工作年月_（实际）']
+正在从Supabase获取员工数据...
+获取到299条员工记录
+数据清洗完成
+清洗后数据样例 (第一条记录):
+  job_change: [']']
+  promotion: ['[', '高技术处外派人员-副部长', '2017/01产业发展一部副部长-部长', '2019/01任AI产业研究所所长、科技转化中心部长', '2021/06/18所长-副总工程师', '2022/08/30副总工程师-副主任', ']']
+  awards: ['[', '服务之星', '2014', '支撑奉献', '2015', '优秀干部', '2016', '优秀干部', '2017', '优秀干部', '2017', '深圳市发展改革委优秀个人', '2018', '优秀干部', '2018', '深圳市发展改革委先进工作者', '2019', '众志成城奖', '2021', '深圳市发展和改革委员会2021年度考核优秀等次事业单位工作人员', ']']
+DataFrame创建成功，列名: ['id', 'name', 'department', 'position', 'gender', 'birth_date', 'age', 'university', 'major', 'education', 'degree', 'first_work_date', 'first_work_month', 'hire_date', 'company_years', 'total_work_years', 'title', 'title_date_old', 'job_change', 'promotion', 'awards', 'is_qs100', 'current_age', 'is_qs50', 'is_985', 'current_work_years', 'current_company_years', 'sequence', 'section', 'ethnicity', 'recruitment_type', 'is_c9', 'is_211', 'major_category', 'team', 'is_business_dept', 'department_normalized', 'education_normalized', 'gender_normalized', 'created_at', '职称/技能_评定时间', '首次参加工作时间_（年假计算用）', '首次参加工作年月_（实际）']
+正在从Supabase获取员工数据...
+获取到299条员工记录
+数据清洗完成
+清洗后数据样例 (第一条记录):
+  job_change: [']']
+  promotion: ['[', '高技术处外派人员-副部长', '2017/01产业发展一部副部长-部长', '2019/01任AI产业研究所所长、科技转化中心部长', '2021/06/18所长-副总工程师', '2022/08/30副总工程师-副主任', ']']
+  awards: ['[', '服务之星', '2014', '支撑奉献', '2015', '优秀干部', '2016', '优秀干部', '2017', '优秀干部', '2017', '深圳市发展改革委优秀个人', '2018', '优秀干部', '2018', '深圳市发展改革委先进工作者', '2019', '众志成城奖', '2021', '深圳市发展和改革委员会2021年度考核优秀等次事业单位工作人员', ']']
+DataFrame创建成功，列名: ['id', 'name', 'department', 'position', 'gender', 'birth_date', 'age', 'university', 'major', 'education', 'degree', 'first_work_date', 'first_work_month', 'hire_date', 'company_years', 'total_work_years', 'title', 'title_date_old', 'job_change', 'promotion', 'awards', 'is_qs100', 'current_age', 'is_qs50', 'is_985', 'current_work_years', 'current_company_years', 'sequence', 'section', 'ethnicity', 'recruitment_type', 'is_c9', 'is_211', 'major_category', 'team', 'is_business_dept', 'department_normalized', 'education_normalized', 'gender_normalized', 'created_at', '职称/技能_评定时间', '首次参加工作时间_（年假计算用）', '首次参加工作年月_（实际）']
+正在从Supabase获取员工数据...
+获取到299条员工记录
+数据清洗完成
+清洗后数据样例 (第一条记录):
+  job_change: [']']
+  promotion: ['[', '高技术处外派人员-副部长', '2017/01产业发展一部副部长-部长', '2019/01任AI产业研究所所长、科技转化中心部长', '2021/06/18所长-副总工程师', '2022/08/30副总工程师-副主任', ']']
+  awards: ['[', '服务之星', '2014', '支撑奉献', '2015', '优秀干部', '2016', '优秀干部', '2017', '优秀干部', '2017', '深圳市发展改革委优秀个人', '2018', '优秀干部', '2018', '深圳市发展改革委先进工作者', '2019', '众志成城奖', '2021', '深圳市发展和改革委员会2021年度考核优秀等次事业单位工作人员', ']']INFO:     Started server process [39860]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
 
-up to date in 267ms
+DataFrame创建成功，列名: ['id', 'name', 'department', 'position', 'gender', 'birth_date', 'age', 'university', 'major', 'education', 'degree', 'first_work_date', 'first_work_month', 'hire_date', 'company_years', 'total_work_years', 'title', 'title_date_old', 'job_change', 'promotion', 'awards', 'is_qs100', 'current_age', 'is_qs50', 'is_985', 'current_work_years', 'current_company_years', 'sequence', 'section', 'ethnicity', 'recruitment_type', 'is_c9', 'is_211', 'major_category', 'team', 'is_business_dept', 'department_normalized', 'education_normalized', 'gender_normalized', 'created_at', '职称/技能_评定时间', '首次参加工作时间_（年假计算用）', '首次参加工作年月_（实际）']
+INFO:     127.0.0.1:54804 - "GET /api/visualizations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54804 - "GET /api/visualizations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54804 - "GET /api/employees HTTP/1.1" 200 OK
+正在从Supabase获取员工数据...
+获取到299条员工记录
+数据清洗完成
+清洗后数据样例 (第一条记录):
+  job_change: [']']
+  promotion: ['[', '高技术处外派人员-副部长', '2017/01产业发展一部副部长-部长', '2019/01任AI产业研究所所长、科技转化中心部长', '2021/06/18所长-副总工程师', '2022/08/30副总工程师-副主任', ']']
+  awards: ['[', '服务之星', '2014', '支撑奉献', '2015', '优秀干部', '2016', '优秀干部', '2017', '优秀干部', '2017', '深圳市发展改革委优秀个人', '2018', '优秀干部', '2018', '深圳市发展改革委先进工作者', '2019', '众志成城奖', '2021', '深圳市发展和改革委员会2021年度考核优秀等次事业单位工作人员', ']']
+DataFrame创建成功，列名: ['id', 'name', 'department', 'position', 'gender', 'birth_date', 'age', 'university', 'major', 'education', 'degree', 'first_work_date', 'first_work_month', 'hire_date', 'company_years', 'total_work_years', 'title', 'title_date_old', 'job_change', 'promotion', 'awards', 'is_qs100', 'current_age', 'is_qs50', 'is_985', 'current_work_years', 'current_company_years', 'sequence', 'section', 'ethnicity', 'recruitment_type', 'is_c9', 'is_211', 'major_category', 'team', 'is_business_dept', 'department_normalized', 'education_normalized', 'gender_normalized', 'created_at', '职称/技能_评定时间', '首次参加工作时间_（年假计算用）', '首次参加工作年月_（实际）']
+正在从Supabase获取员工数据...
+获取到299条员工记录
+数据清洗完成
+清洗后数据样例 (第一条记录):
+  job_change: [']']
+  promotion: ['[', '高技术处外派人员-副部长', '2017/01产业发展一部副部长-部长', '2019/01任AI产业研究所所长、科技转化中心部长', '2021/06/18所长-副总工程师', '2022/08/30副总工程师-副主任', ']']
+  awards: ['[', '服务之星', '2014', '支撑奉献', '2015', '优秀干部', '2016', '优秀干部', '2017', '优秀干部', '2017', '深圳市发展改革委优秀个人', '2018', '优秀干部', '2018', '深圳市发展改革委先进工作者', '2019', '众志成城奖', '2021', '深圳市发展和改革委员会2021年度考核优秀等次事业单位工作人员', ']']
+DataFrame创建成功，列名: ['id', 'name', 'department', 'position', 'gender', 'birth_date', 'age', 'university', 'major', 'education', 'degree', 'first_work_date', 'first_work_month', 'hire_date', 'company_years', 'total_work_years', 'title', 'title_date_old', 'job_change', 'promotion', 'awards', 'is_qs100', 'current_age', 'is_qs50', 'is_985', 'current_work_years', 'current_company_years', 'sequence', 'section', 'ethnicity', 'recruitment_type', 'is_c9', 'is_211', 'major_category', 'team', 'is_business_dept', 'department_normalized', 'education_normalized', 'gender_normalized', 'created_at', '职称/技能_评定时间', '首次参加工作时间_（年假计算用）', '首次参加工作年月_（实际）']
+正在从Supabase获取员工数据...
+获取到299条员工记录
+数据清洗完成
+清洗后数据样例 (第一条记录):
+  job_change: [']']
+  promotion: ['[', '高技术处外派人员-副部长', '2017/01产业发展一部副部长-部长', '2019/01任AI产业研究所所长、科技转化中心部长', '2021/06/18所长-副总工程师', '2022/08/30副总工程师-副主任', ']']
+  awards: ['[', '服务之星', '2014', '支撑奉献', '2015', '优秀干部', '2016', '优秀干部', '2017', '优秀干部', '2017', '深圳市发展改革委优秀个人', '2018', '优秀干部', '2018', '深圳市发展改革委先进工作者', '2019', '众志成城奖', '2021', '深圳市发展和改革委员会2021年度考核优秀等次事业单位工作人员', ']']
+DataFrame创建成功，列名: ['id', 'name', 'department', 'position', 'gender', 'birth_date', 'age', 'university', 'major', 'education', 'degree', 'first_work_date', 'first_work_month', 'hire_date', 'company_years', 'total_work_years', 'title', 'title_date_old', 'job_change', 'promotion', 'awards', 'is_qs100', 'current_age', 'is_qs50', 'is_985', 'current_work_years', 'current_company_years', 'sequence', 'section', 'ethnicity', 'recruitment_type', 'is_c9', 'is_211', 'major_category', 'team', 'is_business_dept', 'department_normalized', 'education_normalized', 'gender_normalized', 'created_at', '职称/技能_评定时间', '首次参加工作时间_（年假计算用）', '首次参加工作年月_（实际）']
+正在从Supabase获取员工数据...
+获取到299条员工记录
+数据清洗完成
+清洗后数据样例 (第一条记录):
+  job_change: [']']
+  promotion: ['[', '高技术处外派人员-副部长', '2017/01产业发展一部副部长-部长', '2019/01任AI产业研究所所长、科技转化中心部长', '2021/06/18所长-副总工程师', '2022/08/30副总工程师-副主任', ']']
+  awards: ['[', '服务之星', '2014', '支撑奉献', '2015', '优秀干部', '2016', '优秀干部', '2017', '优秀干部', '2017', '深圳市发展改革委优秀个人', '2018', '优秀干部', '2018', '深圳市发展改革委先进工作者', '2019', '众志成城奖', '2021', '深圳市发展和改革委员会2021年度考核优秀等次事业单位工作人员', ']']
+DataFrame创建成功，列名: ['id', 'name', 'department', 'position', 'gender', 'birth_date', 'age', 'university', 'major', 'education', 'degree', 'first_work_date', 'first_work_month', 'hire_date', 'company_years', 'total_work_years', 'title', 'title_date_old', 'job_change', 'promotion', 'awards', 'is_qs100', 'current_age', 'is_qs50', 'is_985', 'current_work_years', 'current_company_years', 'sequence', 'section', 'ethnicity', 'recruitment_type', 'is_c9', 'is_211', 'major_category', 'team', 'is_business_dept', 'department_normalized', 'education_normalized', 'gender_normalized', 'created_at', '职称/技能_评定时间', '首次参加工作时间_（年假计算用）', '首次参加工作年月_（实际）']
+INFO:     127.0.0.1:54804 - "GET /api/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54872 - "OPTIONS /api/chat HTTP/1.1" 200 OK
+收到聊天请求: 员工的平均年龄是多少？
+发送消息到OpenRouter: 员工的平均年龄是多少？
+发送到OpenRouter的消息:
+消息 1 - 角色: system, 内容前50个字符: 你是HIIC公司内部HR系统的AI助手，名叫"小智"。你的性格友好、专业且有亲和力。你的回答必须基于...
+消息 2 - 角色: system, 内容前50个字符: 我没有找到与用户问题相关的员工数据。请友好地告知用户无法找到相关信息，并询问是否可以提供其他帮助。不...
+消息 3 - 角色: assistant, 内容前50个字符: 您好！我是中心HR助手 Cool ，请问有什么可以帮助您的？...
+消息 4 - 角色: user, 内容前50个字符: 员工的平均年龄是多少？...
+发送请求到OpenRouter API: https://openrouter.ai/api/v1/chat/completions
+使用模型: google/gemini-2.0-flash-exp:free
+消息数量: 4
+OpenRouter API响应状态码: 401
+OpenRouter API错误响应: {"error":{"message":"No auth credentials found","code":401}}
+OpenRouter API调用失败: 401 Client Error: Unauthorized for url: https://openrouter.ai/api/v1/chat/completions
+获取聊天回复失败: 401 Client Error: Unauthorized for url: https://openrouter.ai/api/v1/chat/completions
+错误详情: Traceback (most recent call last):
+  File "/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/backend/app/services/openrouter_service.py", line 115, in get_chat_response
+    response = self.chat_completion(sanitized_messages)
+  File "/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/backend/app/services/openrouter_service.py", line 82, in chat_completion
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/backend/venv/lib/python3.13/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://openrouter.ai/api/v1/chat/completions
 
-143 packages are looking for funding
-  run `npm fund` for details
-
-> temp-frontend@0.1.0 dev
-> next dev
-
- ⚠ Port 3000 is in use, trying 3001 instead.
-  ▲ Next.js 14.2.24
-  - Local:        http://localhost:3001
-  - Environments: .en ✓ Compiled /src/middleware in 205ms (72 modules)
-中间件处理请求: /
-中间件 - 认证Cookie状态: 
-      sb-access-token: 存在
-      sb-refresh-token: 存在
-      hiic-hr-auth: 存在
-中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
- ○ Compiling / ...
- ✓ Compiled / in 1282ms (700 modules)
-(node:27145) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
-(Use `node --trace-deprecation ...` to show where the warning was created)
- GET / 200 in 1393ms
-中间件处理请求: /login
-中间件 - 认证Cookie状态: 
-      sb-access-token: 存在
-      sb-refresh-token: 存在
-      hiic-hr-auth: 存在
-中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
-中间件 - 用户已登录，从登录页重定向到首页
-中间件处理请求: /
-中间件 - 认证Cookie状态: 
-      sb-access-token: 存在
-      sb-refresh-token: 存在
-      hiic-hr-auth: 存在
-中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
- ✓ Compiled /_not-found in 215ms (694 modules)
- GET /_next/static/css/app/layout.css?v=1741951246214 404 in 277ms
-中间件处理请求: /
-中间件 - 认证Cookie状态: 
-      sb-access-token: 存在
-      sb-refresh-token: 存在
-      hiic-hr-auth: 存在
-中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
- GET /_next/static/css/app/layout.css?v=1741951256253 404 in 25ms
-<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, lstat '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/geist.js'
-<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/geist' in /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server for build dependencies doesn't lead to expected result '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/geist.js', but to 'Error: Can't resolve './vendor-chunks/geist' in '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server'' instead. Resolving dependencies are ignored for this path.
-<w>  at resolve commonjs file ./vendor-chunks/geist (expected /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/geist.js)
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/webpack-runtime.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/webpack-runtime.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/app/page.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/app/page.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/require.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/require.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/load-components.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/load-components.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/utils.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/utils.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-app-loader.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-app-loader.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/bundle5.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/bundle5.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/webpack.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/webpack.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/plugins/define-env-plugin.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/plugins/define-env-plugin.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/swc/index.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/swc/index.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
-<w>  at resolve commonjs /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
-<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/@swc' in /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server for build dependencies doesn't lead to expected result '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/@swc.js', but to 'Error: Can't resolve './vendor-chunks/@swc' in '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server'' instead. Resolving dependencies are ignored for this path.
-<w>  at resolve commonjs file ./vendor-chunks/@swc (expected /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/@swc.js)
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/webpack-runtime.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/webpack-runtime.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/app/page.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/app/page.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/require.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/require.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/load-components.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/load-components.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/utils.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/utils.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-app-loader.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-app-loader.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/bundle5.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/bundle5.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/webpack.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/webpack.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/plugins/define-env-plugin.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/plugins/define-env-plugin.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/swc/index.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/swc/index.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
-<w>  at resolve commonjs /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
-<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/webidl-conversions' in /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server for build dependencies doesn't lead to expected result '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/webidl-conversions.js', but to 'Error: Can't resolve './vendor-chunks/webidl-conversions' in '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server'' instead. Resolving dependencies are ignored for this path.
-<w>  at resolve commonjs file ./vendor-chunks/webidl-conversions (expected /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/webidl-conversions.js)
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/webpack-runtime.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/webpack-runtime.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/app/page.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/app/page.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/require.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/require.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/load-components.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/load-components.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/utils.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/utils.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-app-loader.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-app-loader.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/bundle5.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/bundle5.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/webpack.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/webpack.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/plugins/define-env-plugin.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/plugins/define-env-plugin.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/swc/index.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/swc/index.js
-<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
-<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
-<w>  at resolve commonjs /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+收到OpenRouter回复: 抱歉，处理您的请求时出现了问题。请稍后再试。...
+返回聊天响应: 抱歉，处理您的请求时出现了问题。请稍后再试。...
+INFO:     127.0.0.1:54872 - "POST /api/chat HTTP/1.1" 200 OK

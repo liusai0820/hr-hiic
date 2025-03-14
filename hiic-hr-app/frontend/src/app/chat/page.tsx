@@ -324,21 +324,10 @@ export default function ChatPage() {
     <PageLayout>
       <div className="w-full min-h-[calc(100vh-var(--header-height))] flex flex-col bg-gray-50 dark:bg-gray-900">
         {/* 顶部导航栏 */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
-          <div className="content-container flex items-center justify-between py-3">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-800 dark:text-white">HIIC HR</h1>
-              <div className="mx-2 text-gray-400">/</div>
-              <div className="flex items-center">
-                <span className="text-gray-600 dark:text-gray-300 font-medium">AI对话</span>
-                <div className="ml-2 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs rounded-md">HR</div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button className="px-3 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                日常 Q&A
-              </button>
-            </div>
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+          <div className="content-container py-8">
+            <h1 className="text-3xl font-bold">AI对话</h1>
+            <p className="mt-2 text-blue-100">基于HR数据回答您的问题，提供智能化的人力资源分析</p>
           </div>
         </div>
         
@@ -451,30 +440,9 @@ export default function ChatPage() {
                   )}
                 </div>
                 
-                {/* 功能按钮区 */}
-                {showExamples && messages.length === 1 && (
+                {/* 如果没有消息或只有初始消息，显示示例问题 */}
+                {showExamples && messages.length <= 1 && (
                   <div className="mt-8 mb-4">
-                    <div className="flex flex-wrap justify-center gap-2 mb-6">
-                      <button className="inline-flex items-center px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                        </svg>
-                        总结报告
-                      </button>
-                      <button className="inline-flex items-center px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        创建图表
-                      </button>
-                      <button className="inline-flex items-center px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                        文件上传解析
-                      </button>
-                    </div>
-                    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
                       {[
                         '公司有多少员工？',

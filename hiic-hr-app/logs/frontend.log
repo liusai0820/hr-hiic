@@ -1,5 +1,5 @@
 
-up to date in 241ms
+up to date in 464ms
 
 143 packages are looking for funding
   run `npm fund` for details
@@ -7,12 +7,359 @@ up to date in 241ms
 > temp-frontend@0.1.0 dev
 > next dev
 
- ⚠ Port 3000 is in use, trying 3001 instead.
- ⚠ Port 3001 is in use, trying 3002 instead.
- ⚠ Port 3002 is in use, trying 3003 instead.
   ▲ Next.js 14.2.24
-  - Local:        http://localhost:3003
+  - Local:        http://localhost:3000
   - Environments: .env.local
 
  ✓ Starting...
- ✓ Ready in 1523ms
+ ✓ Ready in 1836ms
+ ✓ Compiled /src/middleware in 58ms
+ ✓ Compiled (72 modules)
+中间件处理请求: /chat
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213391.751 秒
+中间件 - 访问受保护路由: /chat
+中间件 - 会话有效，允许访问受保护路由
+ ○ Compiling /chat ...
+ ✓ Compiled /chat in 1162ms (899 modules)
+(node:39904) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ GET /chat 200 in 1329ms
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213393.421 秒
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 645ms (902 modules)
+ GET /images/assistant-avatar.png 404 in 689ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /chat
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213394.157 秒
+中间件 - 访问受保护路由: /chat
+中间件 - 会话有效，允许访问受保护路由
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213394.164 秒
+ GET /images/assistant-avatar.png 404 in 17ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213396.524 秒
+ ✓ Compiled / in 322ms (894 modules)
+中间件处理请求: /
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213396.867 秒
+中间件处理请求: /chat
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 访问受保护路由: /chat
+中间件 - 会话有效，允许访问受保护路由
+ GET /chat 200 in 53ms
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213399.111 秒
+ GET /images/assistant-avatar.png 404 in 9ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213399.123 秒
+ GET /images/assistant-avatar.png 404 in 11ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /visualizations
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+ ○ Compiling /visualizations ...
+ ✓ Compiled /visualizations in 1140ms (2014 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /visualizations 200 in 1146ms
+中间件处理请求: /chat
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 访问受保护路由: /chat
+中间件 - 会话有效，允许访问受保护路由
+ GET /chat 200 in 16ms
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213401.596 秒
+ GET /images/assistant-avatar.png 404 in 9ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213401.61 秒
+ GET /images/assistant-avatar.png 404 in 8ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /visualizations
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+ GET /visualizations 200 in 14ms
+中间件处理请求: /employees
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+ ✓ Compiled /employees in 229ms (2020 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /employees 200 in 241ms
+中间件处理请求: /visualizations
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+ GET /visualizations 200 in 72ms
+中间件处理请求: /employees
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+ GET /employees 200 in 12ms
+中间件处理请求: /chat
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 访问受保护路由: /chat
+中间件 - 会话有效，允许访问受保护路由
+ GET /chat 200 in 14ms
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+ GET /images/assistant-avatar.png 404 in 9ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213409.078 秒
+ GET /images/assistant-avatar.png 404 in 11ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213409.094 秒
+ GET /images/assistant-avatar.png 404 in 11ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213410.182 秒
+中间件处理请求: /
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213410.194 秒
+中间件处理请求: /chat
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 访问受保护路由: /chat
+中间件 - 会话有效，允许访问受保护路由
+ GET /chat 200 in 14ms
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+ GET /images/assistant-avatar.png 404 in 9ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213411.557 秒
+ GET /images/assistant-avatar.png 404 in 10ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213411.572 秒
+ GET /images/assistant-avatar.png 404 in 8ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /login
+中间件 - 认证Cookie状态: 
+      sb-access-token: 不存在
+      sb-refresh-token: 不存在
+      hiic-hr-auth: 不存在
+ ✓ Compiled /login in 232ms (2026 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+中间件处理请求: /chat
+中间件 - 认证Cookie状态: 
+      sb-access-token: 不存在
+      sb-refresh-token: 不存在
+      hiic-hr-auth: 不存在
+中间件 - 访问受保护路由: /chat
+中间件 - 未检测到有效会话，重定向到登录页
+ GET /login 200 in 319ms
+中间件处理请求: /login
+中间件 - 认证Cookie状态: 
+      sb-access-token: 不存在
+      sb-refresh-token: 不存在
+      hiic-hr-auth: 不存在
+ GET /login?redirect=%2Fchat 200 in 14ms
+中间件处理请求: /chat
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213426.085 秒
+中间件 - 访问受保护路由: /chat
+中间件 - 会话有效，允许访问受保护路由
+ GET /chat 200 in 24ms
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213426.145 秒
+ GET /images/assistant-avatar.png 404 in 9ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213426.307 秒
+ GET /images/assistant-avatar.png 404 in 11ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213426.323 秒
+ GET /images/assistant-avatar.png 404 in 8ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /images/user-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213428.526 秒
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213428.526 秒
+ GET /images/user-avatar.png 404 in 11ms
+ ⨯ The requested resource isn't a valid image for /images/user-avatar.png received text/html; charset=utf-8
+ GET /images/assistant-avatar.png 404 in 12ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /images/user-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213428.547 秒
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213428.547 秒
+ GET /images/user-avatar.png 404 in 13ms
+ ⨯ The requested resource isn't a valid image for /images/user-avatar.png received text/html; charset=utf-8
+ GET /images/assistant-avatar.png 404 in 14ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213430.851 秒
+ GET /images/assistant-avatar.png 404 in 10ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
+中间件处理请求: /images/assistant-avatar.png
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 会话已过期 1740213430.867 秒
+ GET /images/assistant-avatar.png 404 in 11ms
+ ⨯ The requested resource isn't a valid image for /images/assistant-avatar.png received text/html; charset=utf-8
