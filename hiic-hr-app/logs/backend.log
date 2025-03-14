@@ -1,0 +1,128 @@
+
+up to date in 267ms
+
+143 packages are looking for funding
+  run `npm fund` for details
+
+> temp-frontend@0.1.0 dev
+> next dev
+
+ ⚠ Port 3000 is in use, trying 3001 instead.
+  ▲ Next.js 14.2.24
+  - Local:        http://localhost:3001
+  - Environments: .en ✓ Compiled /src/middleware in 205ms (72 modules)
+中间件处理请求: /
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+ ○ Compiling / ...
+ ✓ Compiled / in 1282ms (700 modules)
+(node:27145) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ GET / 200 in 1393ms
+中间件处理请求: /login
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+中间件 - 用户已登录，从登录页重定向到首页
+中间件处理请求: /
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+ ✓ Compiled /_not-found in 215ms (694 modules)
+ GET /_next/static/css/app/layout.css?v=1741951246214 404 in 277ms
+中间件处理请求: /
+中间件 - 认证Cookie状态: 
+      sb-access-token: 存在
+      sb-refresh-token: 存在
+      hiic-hr-auth: 存在
+中间件 - 从cookie解析到手动会话: 用户ID=72f40d66-0ce0-41a9-93f4-3743bdd80bb6
+ GET /_next/static/css/app/layout.css?v=1741951256253 404 in 25ms
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, lstat '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/geist.js'
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/geist' in /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server for build dependencies doesn't lead to expected result '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/geist.js', but to 'Error: Can't resolve './vendor-chunks/geist' in '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/geist (expected /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/geist.js)
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/webpack-runtime.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/webpack-runtime.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/app/page.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/app/page.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/require.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/require.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/load-components.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/load-components.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/utils.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/utils.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-app-loader.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-app-loader.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/bundle5.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/bundle5.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/webpack.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/webpack.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/plugins/define-env-plugin.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/plugins/define-env-plugin.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/swc/index.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/swc/index.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+<w>  at resolve commonjs /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/@swc' in /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server for build dependencies doesn't lead to expected result '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/@swc.js', but to 'Error: Can't resolve './vendor-chunks/@swc' in '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/@swc (expected /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/@swc.js)
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/webpack-runtime.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/webpack-runtime.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/app/page.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/app/page.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/require.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/require.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/load-components.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/load-components.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/utils.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/utils.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-app-loader.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-app-loader.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/bundle5.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/bundle5.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/webpack.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/webpack.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/plugins/define-env-plugin.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/plugins/define-env-plugin.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/swc/index.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/swc/index.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+<w>  at resolve commonjs /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/webidl-conversions' in /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server for build dependencies doesn't lead to expected result '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/webidl-conversions.js', but to 'Error: Can't resolve './vendor-chunks/webidl-conversions' in '/Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/webidl-conversions (expected /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/vendor-chunks/webidl-conversions.js)
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/webpack-runtime.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/webpack-runtime.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/app/page.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/.next/server/app/page.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/require.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/require.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/load-components.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/server/load-components.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/utils.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/utils.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-app-loader.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-app-loader.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/loader-runner/LoaderRunner.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/bundle5.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/bundle5.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/webpack.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/compiled/webpack/webpack.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/plugins/define-env-plugin.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/plugins/define-env-plugin.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/swc/index.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/swc/index.js
+<w>  at file dependencies /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+<w>  at file /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+<w>  at resolve commonjs /Users/qibaoba/hiic/hiic-hr/hiic-hr-app/frontend/node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
