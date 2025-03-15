@@ -1,0 +1,92 @@
+[
+  {
+    "id": "1",
+    "employee_id": "1",
+    "course_name": "高级Python编程",
+    "start_date": "2022-10-15",
+    "end_date": "2022-11-15",
+    "status": "已完成",
+    "score": 92
+  },
+  {
+    "id": "2",
+    "employee_id": "2",
+    "course_name": "产品管理实战",
+    "start_date": "2022-09-01",
+    "end_date": "2022-10-01",
+    "status": "已完成",
+    "score": 88
+  },
+  {
+    "id": "3",
+    "employee_id": "3",
+    "course_name": "高效销售技巧",
+    "start_date": "2022-11-10",
+    "end_date": "2022-12-10",
+    "status": "已完成",
+    "score": 95
+  },
+  {
+    "id": "4",
+    "employee_id": "4",
+    "course_name": "人力资源管理",
+    "start_date": "2022-08-15",
+    "end_date": "2022-09-15",
+    "status": "已完成",
+    "score": 90
+  },
+  {
+    "id": "5",
+    "employee_id": "5",
+    "course_name": "财务分析与决策",
+    "start_date": "2022-07-01",
+    "end_date": "2022-08-01",
+    "status": "已完成",
+    "score": 93
+  },
+  {
+    "id": "6",
+    "employee_id": "6",
+    "course_name": "客户关系管理",
+    "start_date": "2023-01-10",
+    "end_date": "2023-02-10",
+    "status": "已完成",
+    "score": 87
+  },
+  {
+    "id": "7",
+    "employee_id": "7",
+    "course_name": "UI设计进阶",
+    "start_date": "2023-02-15",
+    "end_date": "2023-03-15",
+    "status": "已完成",
+    "score": 91
+  },
+  {
+    "id": "8",
+    "employee_id": "8",
+    "course_name": "前端框架实战",
+    "start_date": "2023-03-01",
+    "end_date": "2023-04-01",
+    "status": "已完成",
+    "score": 89
+  },
+  {
+    "id": "9",
+    "employee_id": "9",
+    "course_name": "办公效率提升",
+    "start_date": "2023-04-10",
+    "end_date": "2023-05-10",
+    "status": "进行中",
+    "score": null
+  },
+  {
+    "id": "10",
+    "employee_id": "10",
+    "course_name": "领导力与团队管理",
+    "start_date": "2023-01-15",
+    "end_date": "2023-02-15",
+    "status": "已完成",
+    "score": 96
+  }
+] 

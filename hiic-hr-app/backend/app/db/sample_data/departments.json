@@ -1,0 +1,32 @@
+[
+  {
+    "id": "1",
+    "name": "研发部",
+    "manager_id": "1",
+    "description": "负责产品研发和技术创新"
+  },
+  {
+    "id": "2",
+    "name": "销售部",
+    "manager_id": "3",
+    "description": "负责产品销售和客户关系维护"
+  },
+  {
+    "id": "3",
+    "name": "人力资源部",
+    "manager_id": "4",
+    "description": "负责人员招聘、培训和绩效管理"
+  },
+  {
+    "id": "4",
+    "name": "财务部",
+    "manager_id": "5",
+    "description": "负责公司财务管理和预算控制"
+  },
+  {
+    "id": "5",
+    "name": "管理层",
+    "manager_id": "10",
+    "description": "负责公司整体战略规划和管理"
+  }
+] 

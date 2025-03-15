@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
@@ -13,8 +13,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // 创建管理员账号
-    const { data, error } = await auth.createAdminAccount(email, password);
+    // 创建用户账号
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          role: 'admin'
+        }
+      }
+    });
 
     if (error) {
       console.error('创建管理员账号失败:', error);

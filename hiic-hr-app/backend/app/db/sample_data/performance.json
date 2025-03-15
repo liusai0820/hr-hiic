@@ -1,0 +1,82 @@
+[
+  {
+    "id": "1",
+    "employee_id": "1",
+    "year": 2022,
+    "quarter": 4,
+    "score": 4.5,
+    "comments": "表现优秀，技术能力强，团队协作好"
+  },
+  {
+    "id": "2",
+    "employee_id": "2",
+    "year": 2022,
+    "quarter": 4,
+    "score": 4.2,
+    "comments": "工作认真负责，产品规划能力强"
+  },
+  {
+    "id": "3",
+    "employee_id": "3",
+    "year": 2022,
+    "quarter": 4,
+    "score": 4.8,
+    "comments": "销售业绩突出，客户满意度高"
+  },
+  {
+    "id": "4",
+    "employee_id": "4",
+    "year": 2022,
+    "quarter": 4,
+    "score": 4.0,
+    "comments": "工作细致，招聘效率高"
+  },
+  {
+    "id": "5",
+    "employee_id": "5",
+    "year": 2022,
+    "quarter": 4,
+    "score": 4.3,
+    "comments": "财务管理规范，预算控制良好"
+  },
+  {
+    "id": "6",
+    "employee_id": "1",
+    "year": 2023,
+    "quarter": 1,
+    "score": 4.6,
+    "comments": "技术创新能力强，解决了多个关键问题"
+  },
+  {
+    "id": "7",
+    "employee_id": "2",
+    "year": 2023,
+    "quarter": 1,
+    "score": 4.1,
+    "comments": "产品规划合理，但执行过程中有些延误"
+  },
+  {
+    "id": "8",
+    "employee_id": "3",
+    "year": 2023,
+    "quarter": 1,
+    "score": 4.7,
+    "comments": "销售业绩持续优秀，开拓了新市场"
+  },
+  {
+    "id": "9",
+    "employee_id": "4",
+    "year": 2023,
+    "quarter": 1,
+    "score": 4.2,
+    "comments": "人员管理有序，培训计划执行良好"
+  },
+  {
+    "id": "10",
+    "employee_id": "5",
+    "year": 2023,
+    "quarter": 1,
+    "score": 4.4,
+    "comments": "财务报表准确，成本控制有效"
+  }
+] 

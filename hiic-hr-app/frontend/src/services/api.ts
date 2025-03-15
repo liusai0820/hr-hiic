@@ -222,6 +222,82 @@ export const chatApi = {
       }
       
       // 发送请求
+      console.log('API服务 - 开始发送请求到:', `${api.defaults.baseURL}/enhanced-chat`);
+      const response = await api.post('/enhanced-chat', { messages }, { headers });
+      console.log('API服务 - 请求成功，状态码:', response.status);
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('API服务 - 发送聊天消息失败:', error);
+      
+      // 详细记录错误信息
+      if (error.response) {
+        // 服务器返回错误
+        console.error('API服务 - 服务器错误:', {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+      } else if (error.request) {
+        // 请求发送但没有收到响应
+        console.error('API服务 - 无响应错误:', error.request);
+      } else {
+        // 请求设置时出错
+        console.error('API服务 - 请求错误:', error.message);
+      }
+      
+      // 重新抛出错误，但添加更多上下文
+      throw {
+        message: error.response?.data?.message || error.message || '发送聊天消息失败',
+        originalError: error,
+        status: error.response?.status
+      };
+    }
+  },
+  
+  // 发送传统聊天消息（保留原始API以便回退）
+  sendLegacyMessage: async (messages: Array<{role: string, content: string}>) => {
+    try {
+      console.log('API服务 - 发送传统聊天消息:', messages.length, '条消息');
+      
+      // 获取认证令牌
+      let authToken = null;
+      if (typeof window !== 'undefined') {
+        // 尝试从localStorage获取认证令牌
+        try {
+          const authData = localStorage.getItem('hiic-hr-auth');
+          if (authData) {
+            const authObj = JSON.parse(authData);
+            authToken = authObj.access_token;
+            console.log('API服务 - 已从localStorage获取认证令牌');
+          } else {
+            console.log('API服务 - localStorage中未找到认证令牌');
+          }
+        } catch (e) {
+          console.error('API服务 - 解析认证令牌失败:', e);
+        }
+        
+        // 如果localStorage中没有，尝试从全局变量获取
+        if (!authToken && window.hiicHrSession?.access_token) {
+          authToken = window.hiicHrSession.access_token;
+          console.log('API服务 - 已从全局变量获取认证令牌');
+        }
+      }
+      
+      // 设置请求头
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // 如果有认证令牌，添加到请求头
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+        console.log('API服务 - 已添加认证令牌到请求头');
+      } else {
+        console.log('API服务 - 未找到认证令牌，使用匿名请求');
+      }
+      
+      // 发送请求
       console.log('API服务 - 开始发送请求到:', `${api.defaults.baseURL}/chat`);
       const response = await api.post('/chat', { messages }, { headers });
       console.log('API服务 - 请求成功，状态码:', response.status);
@@ -253,7 +329,7 @@ export const chatApi = {
         status: error.response?.status
       };
     }
-  },
+  }
 };
 
 export default api; 

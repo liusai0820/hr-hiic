@@ -375,7 +375,7 @@ export default function ChatPage() {
                       {message.role === 'assistant' && (
                         <div className="h-8 w-8 rounded-full bg-blue-600 flex-shrink-0 mr-3 flex items-center justify-center overflow-hidden mt-1">
                           <Image 
-                            src="/images/assistant-avatar.png" 
+                            src="/images/assistant-avatar.svg" 
                             alt="HR助手" 
                             width={32} 
                             height={32}
@@ -399,7 +399,7 @@ export default function ChatPage() {
                       {message.role === 'user' && (
                         <div className="h-8 w-8 rounded-full bg-gray-300 flex-shrink-0 ml-3 flex items-center justify-center overflow-hidden mt-1">
                           <Image 
-                            src="/images/user-avatar.png" 
+                            src="/images/user-avatar.svg" 
                             alt="用户" 
                             width={32} 
                             height={32}
@@ -418,7 +418,7 @@ export default function ChatPage() {
                     <div className="flex justify-start">
                       <div className="h-8 w-8 rounded-full bg-blue-600 flex-shrink-0 mr-3 flex items-center justify-center overflow-hidden mt-1">
                         <Image 
-                          src="/images/assistant-avatar.png" 
+                          src="/images/assistant-avatar.svg" 
                           alt="HR助手" 
                           width={32} 
                           height={32}

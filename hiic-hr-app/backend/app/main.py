@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import router
+from app.routers.chat import router as chat_router
 from app.core.config import settings
+from app.core.error_handler import error_handler_middleware
 import uvicorn
 
 # 创建FastAPI应用
@@ -13,17 +15,22 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+# 添加错误处理中间件
+app.middleware("http")(error_handler_middleware)
+
 # 添加CORS中间件
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=["*"],  # 允许所有来源
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # 允许所有方法
+    allow_headers=["*"],  # 允许所有头部
+    expose_headers=["*"],  # 暴露所有头部
 )
 
 # 包含API路由
 app.include_router(router, prefix="/api")
+app.include_router(chat_router, prefix="/chat")
 
 # 根路径
 @app.get("/")

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "1",
+    "employee_id": "1",
+    "date": "2023-05-15",
+    "check_in": "08:55:00",
+    "check_out": "18:05:00",
+    "status": "正常"
+  },
+  {
+    "id": "2",
+    "employee_id": "2",
+    "date": "2023-05-15",
+    "check_in": "09:10:00",
+    "check_out": "18:00:00",
+    "status": "迟到"
+  },
+  {
+    "id": "3",
+    "employee_id": "3",
+    "date": "2023-05-15",
+    "check_in": "08:45:00",
+    "check_out": "17:50:00",
+    "status": "正常"
+  },
+  {
+    "id": "4",
+    "employee_id": "4",
+    "date": "2023-05-15",
+    "check_in": "08:50:00",
+    "check_out": "18:10:00",
+    "status": "正常"
+  },
+  {
+    "id": "5",
+    "employee_id": "5",
+    "date": "2023-05-15",
+    "check_in": "09:00:00",
+    "check_out": "18:00:00",
+    "status": "正常"
+  }
+] 

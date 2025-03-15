@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Body
 from app.models.hr_models import ChatRequest, ChatResponse, Employee, StatsResponse
 from app.services.chat_service import hr_chat_service
+from app.services.enhanced_chat_service import enhanced_hr_chat_service
 from app.services.visualization_service import visualization_service
 from app.db.supabase import supabase_client
 from typing import List, Dict, Any
@@ -40,6 +41,21 @@ async def chat(request: ChatRequest):
         print(f"处理聊天请求时出错: {str(e)}")
         print(f"错误详情: {error_trace}")
         raise HTTPException(status_code=500, detail=f"处理聊天请求时出错: {str(e)}")
+
+@router.post("/enhanced-chat", response_model=ChatResponse)
+async def enhanced_chat(request: ChatRequest):
+    """增强版聊天API，支持工具调用和复杂推理"""
+    try:
+        print(f"收到增强版聊天请求: {request.messages[-1].content if request.messages else '空消息'}")
+        response = await enhanced_hr_chat_service.get_response(request.messages)
+        print(f"返回增强版聊天响应: {response[:100]}...")
+        return ChatResponse(response=response)
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"处理增强版聊天请求时出错: {str(e)}")
+        print(f"错误详情: {error_trace}")
+        raise HTTPException(status_code=500, detail=f"处理增强版聊天请求时出错: {str(e)}")
 
 @router.get("/employees", response_model=List[Employee])
 async def get_employees():

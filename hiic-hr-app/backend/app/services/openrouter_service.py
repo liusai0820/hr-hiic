@@ -26,12 +26,29 @@ class OpenRouterService:
         self.api_key = api_key
         self.model = model
         self.api_url = api_url
+        
+        # 打印API密钥前几个字符，用于调试
+        if self.api_key:
+            print(f"OpenRouter API密钥前10个字符: {self.api_key[:10]}...")
+        else:
+            print("警告: OpenRouter API密钥为空")
+        
         self.headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}",
             "HTTP-Referer": "https://hiic-hr.app",  # 您的应用URL
             "X-Title": "HIIC HR AI App"  # 修改为英文，避免编码问题
         }
+        
+        # 打印完整的headers，但隐藏完整的API密钥
+        debug_headers = self.headers.copy()
+        if "Authorization" in debug_headers and debug_headers["Authorization"]:
+            auth_parts = debug_headers["Authorization"].split(" ")
+            if len(auth_parts) > 1:
+                token = auth_parts[1]
+                if len(token) > 10:
+                    debug_headers["Authorization"] = f"{auth_parts[0]} {token[:10]}..."
+        print(f"OpenRouter API请求头: {debug_headers}")
     
     def chat_completion(
         self, 
@@ -67,6 +84,17 @@ class OpenRouterService:
             print(f"发送请求到OpenRouter API: {url}")
             print(f"使用模型: {self.model}")
             print(f"消息数量: {len(messages)}")
+            
+            # 再次检查API密钥
+            if not self.api_key or len(self.api_key) < 10:
+                print("错误: OpenRouter API密钥无效或为空")
+                raise ValueError("OpenRouter API密钥无效或为空")
+            
+            # 确保headers中包含Authorization
+            if "Authorization" not in self.headers or not self.headers["Authorization"]:
+                print("错误: Authorization头部缺失")
+                self.headers["Authorization"] = f"Bearer {self.api_key}"
+                print(f"已重新设置Authorization头部: Bearer {self.api_key[:10]}...")
             
             response = requests.post(
                 url, 
