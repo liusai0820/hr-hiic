@@ -171,9 +171,22 @@ export default function VisualizationsPage() {
         const isDataValid = data && Object.keys(data).length > 0;
         
         if (isDataValid) {
-          setVisualizations(data);
-          setUseDemo(false);
-          console.log('使用真实数据');
+          // 检查每个分类是否包含error字段，如果有，则用示例数据替换
+          const enhancedData = { ...data };
+          let hasErrorData = false;
+          
+          // 检查所有可视化数据中是否有错误
+          Object.keys(enhancedData).forEach(key => {
+            if (enhancedData[key].error) {
+              console.log(`发现错误数据: ${key}, 错误: ${enhancedData[key].error}, 使用示例数据替换`);
+              enhancedData[key] = demoData[key];
+              hasErrorData = true;
+            }
+          });
+          
+          setVisualizations(enhancedData);
+          setUseDemo(hasErrorData);
+          console.log('使用' + (hasErrorData ? '部分' : '全部') + '真实数据');
         } else {
           console.log('API返回的数据为空，使用示例数据');
           setVisualizations(demoData);
@@ -655,13 +668,20 @@ export default function VisualizationsPage() {
     setDialogError(null);
     
     try {
+      console.log(`正在获取${visualizationType}类型下的${category}分类员工列表...`);
       const response = await fetch(`/api/visualizations/employees/${visualizationType}?category=${encodeURIComponent(category)}`);
+      
       if (!response.ok) {
-        throw new Error('获取员工列表失败');
+        const errorText = await response.text();
+        console.error(`获取员工列表失败: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`获取员工列表失败: ${response.status} ${response.statusText}`);
       }
+      
       const result = await response.json();
+      console.log(`获取到${result.total}名员工数据:`, result);
       setDialogEmployees(result.employees || []);
     } catch (err: any) {
+      console.error('获取员工列表出错:', err);
       setDialogError(err.message);
     } finally {
       setDialogLoading(false);

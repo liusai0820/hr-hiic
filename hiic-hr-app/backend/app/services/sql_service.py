@@ -66,78 +66,161 @@ class SQLService:
         
         try:
             cursor = self.conn.cursor()
-            # 常用查询字段的索引
-            cursor.execute('CREATE INDEX idx_name ON employees(name)')
-            cursor.execute('CREATE INDEX idx_department_id ON employees(department_id)')
-            cursor.execute('CREATE INDEX idx_position ON employees(position)')
-            cursor.execute('CREATE INDEX idx_education ON employees(education)')
-            cursor.execute('CREATE INDEX idx_gender ON employees(gender)')
+            
+            # 获取表的实际列名
+            cursor.execute("PRAGMA table_info(employees)")
+            columns = cursor.fetchall()
+            column_names = [col[1] for col in columns]
+            print(f"SQL服务：employees表的实际列名: {column_names}")
+            
+            # 为常用列创建索引（如果存在）
+            if 'name' in column_names:
+                cursor.execute('CREATE INDEX idx_name ON employees(name)')
+                print("SQL服务：已在name列上创建索引")
+                
+            if 'department' in column_names:
+                cursor.execute('CREATE INDEX idx_department ON employees(department)')
+                print("SQL服务：已在department列上创建索引")
+                
+            if 'position' in column_names:
+                cursor.execute('CREATE INDEX idx_position ON employees(position)')
+                print("SQL服务：已在position列上创建索引")
+                
+            if 'education_level' in column_names:
+                cursor.execute('CREATE INDEX idx_education_level ON employees(education_level)')
+                print("SQL服务：已在education_level列上创建索引")
+            elif 'education' in column_names:
+                cursor.execute('CREATE INDEX idx_education ON employees(education)')
+                print("SQL服务：已在education列上创建索引")
+                
+            if 'gender' in column_names:
+                cursor.execute('CREATE INDEX idx_gender ON employees(gender)')
+                print("SQL服务：已在gender列上创建索引")
+                
+            if 'age' in column_names:
+                cursor.execute('CREATE INDEX idx_age ON employees(age)')
+                print("SQL服务：已在age列上创建索引")
+                
+            if 'university' in column_names:
+                cursor.execute('CREATE INDEX idx_university ON employees(university)')
+                print("SQL服务：已在university列上创建索引")
+                
             self.conn.commit()
+            print("SQL服务：索引创建完成")
         except Exception as e:
             print(f"SQL服务：创建索引失败 - {str(e)}")
     
     def _get_db_schema(self) -> Dict[str, Any]:
         """获取数据库表结构"""
-        # 这里应该从数据库中获取实际的表结构
-        # 为简化实现，这里直接硬编码表结构
+        # 如果有连接，从数据库中获取实际的表结构
+        if self.conn is not None:
+            try:
+                cursor = self.conn.cursor()
+                # 获取employees表的列信息
+                cursor.execute("PRAGMA table_info(employees)")
+                columns = cursor.fetchall()
+                
+                # 构建实际的表结构
+                actual_schema = {
+                    "employees": {
+                        "description": "员工信息表",
+                        "columns": []
+                    }
+                }
+                
+                # 列信息格式: (cid, name, type, notnull, dflt_value, pk)
+                for col in columns:
+                    col_name = col[1]
+                    col_type = col[2]
+                    
+                    # 为常见列添加描述
+                    description = ""
+                    if col_name == "id":
+                        description = "员工ID，主键"
+                    elif col_name == "name":
+                        description = "员工姓名"
+                    elif col_name == "gender":
+                        description = "性别，'男'或'女'"
+                    elif col_name == "age":
+                        description = "年龄"
+                    elif col_name == "department":
+                        description = "部门名称"
+                    elif col_name == "position":
+                        description = "职位"
+                    elif col_name == "education" or col_name == "education_level":
+                        description = "学历，如'本科'、'硕士'等"
+                    elif col_name == "university":
+                        description = "毕业院校"
+                    elif col_name == "major":
+                        description = "专业"
+                    elif col_name == "hire_date":
+                        description = "入职日期"
+                    elif col_name == "birth_date":
+                        description = "出生日期"
+                    elif col_name == "total_work_years" or col_name == "company_years":
+                        description = "工作年限"
+                    else:
+                        description = f"{col_name}字段"
+                    
+                    actual_schema["employees"]["columns"].append({
+                        "name": col_name,
+                        "type": col_type,
+                        "description": description
+                    })
+                
+                print(f"SQL服务：成功从数据库获取表结构，employees表有{len(actual_schema['employees']['columns'])}列")
+                return actual_schema
+            except Exception as e:
+                print(f"SQL服务：从数据库获取表结构失败 - {str(e)}")
+        
+        # 如果无法从数据库获取，使用硬编码的表结构
+        print("SQL服务：使用默认表结构")
         return {
             "employees": {
                 "description": "员工信息表",
                 "columns": [
-                    {"name": "id", "type": "uuid", "description": "员工ID，主键"},
+                    {"name": "id", "type": "text", "description": "员工ID，主键"},
                     {"name": "name", "type": "text", "description": "员工姓名"},
                     {"name": "gender", "type": "text", "description": "性别，'男'或'女'"},
                     {"name": "age", "type": "integer", "description": "年龄"},
-                    {"name": "department_id", "type": "uuid", "description": "部门ID，外键关联departments表"},
+                    {"name": "department", "type": "text", "description": "部门名称"},
                     {"name": "position", "type": "text", "description": "职位"},
-                    {"name": "salary", "type": "numeric", "description": "薪资"},
-                    {"name": "hire_date", "type": "date", "description": "入职日期"},
-                    {"name": "education", "type": "text", "description": "学历，如'本科'、'硕士'等"},
-                    {"name": "email", "type": "text", "description": "电子邮箱"},
-                    {"name": "phone", "type": "text", "description": "电话号码"}
+                    {"name": "education_level", "type": "text", "description": "学历，如'本科'、'硕士'等"},
+                    {"name": "university", "type": "text", "description": "毕业院校"},
+                    {"name": "major", "type": "text", "description": "专业"},
+                    {"name": "hire_date", "type": "text", "description": "入职日期"},
+                    {"name": "total_work_years", "type": "numeric", "description": "工作年限"},
+                    {"name": "company_years", "type": "numeric", "description": "在职年限"}
                 ]
             },
             "departments": {
                 "description": "部门信息表",
                 "columns": [
-                    {"name": "id", "type": "uuid", "description": "部门ID，主键"},
+                    {"name": "id", "type": "text", "description": "部门ID，主键"},
                     {"name": "name", "type": "text", "description": "部门名称"},
-                    {"name": "manager_id", "type": "uuid", "description": "部门经理ID，外键关联employees表"},
+                    {"name": "manager_id", "type": "text", "description": "部门经理ID，外键关联employees表"},
                     {"name": "description", "type": "text", "description": "部门描述"}
                 ]
             },
-            "attendance": {
-                "description": "考勤记录表",
+            "education": {
+                "description": "教育背景表",
                 "columns": [
-                    {"name": "id", "type": "uuid", "description": "记录ID，主键"},
-                    {"name": "employee_id", "type": "uuid", "description": "员工ID，外键关联employees表"},
-                    {"name": "date", "type": "date", "description": "日期"},
-                    {"name": "check_in", "type": "time", "description": "签到时间"},
-                    {"name": "check_out", "type": "time", "description": "签退时间"},
-                    {"name": "status", "type": "text", "description": "状态，如'正常'、'迟到'、'早退'等"}
+                    {"name": "id", "type": "text", "description": "记录ID，主键"},
+                    {"name": "employee_id", "type": "text", "description": "员工ID，外键关联employees表"},
+                    {"name": "university", "type": "text", "description": "毕业院校"},
+                    {"name": "major", "type": "text", "description": "专业"},
+                    {"name": "education_level", "type": "text", "description": "学历，如'本科'、'硕士'等"},
+                    {"name": "degree", "type": "text", "description": "学位"}
                 ]
             },
-            "performance": {
-                "description": "绩效评估表",
+            "work_experience": {
+                "description": "工作经验表",
                 "columns": [
-                    {"name": "id", "type": "uuid", "description": "记录ID，主键"},
-                    {"name": "employee_id", "type": "uuid", "description": "员工ID，外键关联employees表"},
-                    {"name": "year", "type": "integer", "description": "年份"},
-                    {"name": "quarter", "type": "integer", "description": "季度，1-4"},
-                    {"name": "score", "type": "numeric", "description": "绩效分数"},
-                    {"name": "comments", "type": "text", "description": "评语"}
-                ]
-            },
-            "training": {
-                "description": "培训记录表",
-                "columns": [
-                    {"name": "id", "type": "uuid", "description": "记录ID，主键"},
-                    {"name": "employee_id", "type": "uuid", "description": "员工ID，外键关联employees表"},
-                    {"name": "course_name", "type": "text", "description": "培训课程名称"},
-                    {"name": "start_date", "type": "date", "description": "开始日期"},
-                    {"name": "end_date", "type": "date", "description": "结束日期"},
-                    {"name": "status", "type": "text", "description": "状态，如'进行中'、'已完成'等"},
-                    {"name": "score", "type": "numeric", "description": "培训成绩"}
+                    {"name": "id", "type": "text", "description": "记录ID，主键"},
+                    {"name": "employee_id", "type": "text", "description": "员工ID，外键关联employees表"},
+                    {"name": "company_years", "type": "numeric", "description": "在职年限"},
+                    {"name": "total_work_years", "type": "numeric", "description": "工作总年限"},
+                    {"name": "hire_date", "type": "text", "description": "入职日期"}
                 ]
             }
         }
@@ -164,11 +247,8 @@ class SQLService:
 {chr(10).join(schema_parts)}
 
 表之间的关系:
-1. employees.department_id 关联 departments.id
-2. departments.manager_id 关联 employees.id
-3. attendance.employee_id 关联 employees.id
-4. performance.employee_id 关联 employees.id
-5. training.employee_id 关联 employees.id
+1. education.employee_id 关联 employees.id - 员工的教育背景
+2. work_experience.employee_id 关联 employees.id - 员工的工作经验
 
 你的工作流程:
 1. 分析用户的问题，理解他们想要查询的信息
@@ -177,7 +257,7 @@ class SQLService:
 4. 以自然、对话化的方式回答用户的问题，不要直接展示SQL或原始数据
 
 SQL查询规则:
-1. 使用标准的PostgreSQL语法
+1. 使用标准的SQLite语法
 2. 查询应该尽可能简洁高效
 3. 对于复杂问题，可以使用子查询或多个查询
 4. 确保查询安全，避免SQL注入风险
@@ -190,9 +270,9 @@ SQL查询规则:
 5. 所有回答必须使用中文，语气要活泼但专业
 
 示例:
-用户问题: "研发部有多少人？"
-SQL查询: SELECT COUNT(*) FROM employees e JOIN departments d ON e.department_id = d.id WHERE d.name = '研发部'
-回答: "研发部目前有42名员工。这是我们公司规模第二大的部门，仅次于销售部。"
+用户问题: "大数据平台与信息部有多少人？"
+SQL查询: SELECT COUNT(*) FROM employees WHERE department = '大数据平台与信息部'
+回答: "大数据平台与信息部目前有42名员工。这是我们公司规模较大的部门之一。"
 
 用户问题: "谁是最年轻的员工？"
 SQL查询: SELECT name, age FROM employees ORDER BY age ASC LIMIT 1

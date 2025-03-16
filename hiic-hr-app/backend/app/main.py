@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import router
 from app.routers.chat import router as chat_router
+from app.routers.visualizations import router as visualizations_router
 from app.core.config import settings
 from app.core.error_handler import error_handler_middleware
 import uvicorn
@@ -31,6 +32,7 @@ app.add_middleware(
 # 包含API路由
 app.include_router(router, prefix="/api")
 app.include_router(chat_router, prefix="/chat")
+app.include_router(visualizations_router)  # 可视化路由已经包含了/api/visualizations前缀
 
 # 根路径
 @app.get("/")

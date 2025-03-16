@@ -158,62 +158,6 @@ async def get_stats():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取统计数据时出错: {str(e)}")
 
-@router.get("/visualizations", response_model=Dict[str, Any])
-async def get_visualizations():
-    """获取所有可视化图表"""
-    try:
-        return visualization_service.get_all_visualizations()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"获取可视化数据时出错: {str(e)}")
-
-@router.get("/visualizations/department", response_model=Dict[str, Any])
-async def get_department_visualization():
-    """获取部门分布可视化"""
-    try:
-        return visualization_service.department_distribution()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"获取部门可视化数据时出错: {str(e)}")
-
-@router.get("/visualizations/gender", response_model=Dict[str, Any])
-async def get_gender_visualization():
-    """获取性别分布可视化"""
-    try:
-        return visualization_service.gender_distribution()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"获取性别可视化数据时出错: {str(e)}")
-
-@router.get("/visualizations/age", response_model=Dict[str, Any])
-async def get_age_visualization():
-    """获取年龄分布可视化"""
-    try:
-        return visualization_service.age_distribution()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"获取年龄可视化数据时出错: {str(e)}")
-
-@router.get("/visualizations/education", response_model=Dict[str, Any])
-async def get_education_visualization():
-    """获取学历分布可视化"""
-    try:
-        return visualization_service.education_distribution()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"获取学历可视化数据时出错: {str(e)}")
-
-@router.get("/visualizations/university", response_model=Dict[str, Any])
-async def get_university_visualization():
-    """获取高校分布可视化"""
-    try:
-        return visualization_service.university_distribution()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"获取高校可视化数据时出错: {str(e)}")
-
-@router.get("/visualizations/work_years", response_model=Dict[str, Any])
-async def get_work_years_visualization():
-    """获取工作年限分布可视化"""
-    try:
-        return visualization_service.work_years_distribution()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"获取工作年限可视化数据时出错: {str(e)}")
-
 # 用户管理相关API
 @router.get("/users", response_model=List[UserResponse])
 async def get_all_users():
@@ -248,32 +192,24 @@ async def get_pending_users():
         formatted_users = []
         for user in users:
             formatted_users.append({
-                'id': user['id'],
-                'email': user['email'],
+                'id': user.get('id'),
+                'email': user.get('email'),
                 'approved': False,
-                'role': user['role'],
-                'created_at': user['created_at'].isoformat() if isinstance(user['created_at'], datetime) else user['created_at']
+                'role': user.get('role', 'user'),
+                'created_at': user.get('created_at')
             })
-            
+        
         return formatted_users
     except Exception as e:
         print(f"获取待审批用户列表失败: {str(e)}")
         raise HTTPException(status_code=500, detail=f"获取待审批用户列表失败: {str(e)}")
 
-@router.post("/users/{user_id}/approve", response_model=Dict[str, str])
-async def approve_user(user_id: str, approval: UserApprovalRequest = Body(...)):
+@router.post("/users/{user_id}/approve", response_model=Dict[str, bool])
+async def approve_user(user_id: str, request: UserApprovalRequest):
     """审批用户"""
     try:
-        if user_id != approval.user_id:
-            raise HTTPException(status_code=400, detail="用户ID不匹配")
-            
-        result = supabase_client.update_user_approval(user_id, approval.approved)
-        
-        if approval.approved:
-            return {"message": f"用户 {user_id} 已成功审批"}
-        else:
-            return {"message": f"用户 {user_id} 已被拒绝"}
-    except HTTPException:
-        raise
+        result = supabase_client.update_user_approval(user_id, request.approved)
+        return {"success": result}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"审批用户时出错: {str(e)}") 
+        print(f"审批用户失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"审批用户失败: {str(e)}") 
