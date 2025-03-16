@@ -166,11 +166,58 @@ class SupabaseClient:
     
     def get_all_employees(self) -> List[Dict[str, Any]]:
         """获取所有员工信息"""
-        if self.client and self.employees_cache:
-            return self.employees_cache
-        else:
-            print("使用示例员工数据")
-            return self.sample_employees
+        try:
+            if self.client:
+                print("从Supabase获取员工数据...")
+                response = self.client.table('employees').select('*').execute()
+                if hasattr(response, 'data') and response.data:
+                    print(f"成功获取{len(response.data)}条员工记录")
+                    return response.data
+                else:
+                    print("从Supabase获取员工数据失败，使用示例数据")
+            else:
+                print("Supabase客户端未初始化，使用示例数据")
+        except Exception as e:
+            print(f"获取员工数据异常: {str(e)}")
+        
+        print("使用示例员工数据")
+        return self.sample_employees
+    
+    def get_all_education(self) -> List[Dict[str, Any]]:
+        """获取所有教育信息"""
+        try:
+            if self.client:
+                print("从Supabase获取教育数据...")
+                response = self.client.table('education').select('*').execute()
+                if hasattr(response, 'data') and response.data:
+                    print(f"成功获取{len(response.data)}条教育记录")
+                    return response.data
+                else:
+                    print("从Supabase获取教育数据失败")
+            else:
+                print("Supabase客户端未初始化")
+        except Exception as e:
+            print(f"获取教育数据异常: {str(e)}")
+        
+        return []
+    
+    def get_all_work_experience(self) -> List[Dict[str, Any]]:
+        """获取所有工作经验信息"""
+        try:
+            if self.client:
+                print("从Supabase获取工作经验数据...")
+                response = self.client.table('work_experience').select('*').execute()
+                if hasattr(response, 'data') and response.data:
+                    print(f"成功获取{len(response.data)}条工作经验记录")
+                    return response.data
+                else:
+                    print("从Supabase获取工作经验数据失败")
+            else:
+                print("Supabase客户端未初始化")
+        except Exception as e:
+            print(f"获取工作经验数据异常: {str(e)}")
+        
+        return []
     
     def get_employee_by_id(self, employee_id: str) -> Optional[Dict[str, Any]]:
         """根据ID获取员工信息"""

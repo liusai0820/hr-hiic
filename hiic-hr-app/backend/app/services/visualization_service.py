@@ -98,12 +98,21 @@ class VisualizationService:
         # 获取部门分布
         dept_counts = self.df['department'].value_counts()
         
+        # 计算部门统计信息
+        dept_stats = {
+            "部门总数": len(dept_counts),
+            "平均人数": round(dept_counts.mean()),
+            "最大部门": int(dept_counts.max()),
+            "最小部门": int(dept_counts.min())
+        }
+        
         return {
             "title": "部门人员分布",
             "description": "展示各部门人员数量分布情况",
             "xAxis": dept_counts.index.tolist(),
             "yAxis": dept_counts.values.tolist(),
-            "data": {dept: int(count) for dept, count in dept_counts.items()}
+            "data": {dept: int(count) for dept, count in dept_counts.items()},
+            "stats": dept_stats
         }
     
     def gender_distribution(self) -> Dict[str, Any]:
@@ -114,12 +123,23 @@ class VisualizationService:
         # 获取性别分布
         gender_counts = self.df['gender'].value_counts()
         
+        # 计算性别统计信息
+        total = gender_counts.sum()
+        gender_stats = {
+            "总人数": int(total)
+        }
+        
+        for gender, count in gender_counts.items():
+            percentage = round((count / total) * 100)
+            gender_stats[f"{gender}比例"] = percentage
+        
         return {
             "title": "性别分布",
             "description": "展示公司员工性别比例分布",
             "labels": gender_counts.index.tolist(),
             "values": gender_counts.values.tolist(),
-            "data": {gender: int(count) for gender, count in gender_counts.items()}
+            "data": {gender: int(count) for gender, count in gender_counts.items()},
+            "stats": gender_stats
         }
     
     def age_distribution(self) -> Dict[str, Any]:
@@ -155,14 +175,11 @@ class VisualizationService:
     def education_distribution(self) -> Dict[str, Any]:
         """学历分布可视化数据"""
         # 检查是否有教育数据
-        if self.df.empty or 'education_level' not in self.df.columns:
-            # 尝试使用员工表中的education字段
-            if 'education' in self.df.columns:
-                edu_column = 'education'
-            else:
-                return {"error": "无法获取学历数据"}
-        else:
-            edu_column = 'education_level'
+        if self.df.empty or ('education_level' not in self.df.columns and 'education' not in self.df.columns):
+            return {"error": "无法获取学历数据"}
+        
+        # 确定使用哪个字段
+        edu_column = 'education_level' if 'education_level' in self.df.columns else 'education'
         
         # 获取学历分布
         edu_counts = self.df[edu_column].value_counts()
@@ -195,10 +212,15 @@ class VisualizationService:
         # 计算高校统计信息
         uni_stats = {
             "高校总数": len(self.df['university'].unique()),
-            "985高校人数": int(self.df.get('is_985', pd.Series([False] * len(self.df))).sum()),
-            "211高校人数": int(self.df.get('is_211', pd.Series([False] * len(self.df))).sum()),
-            "C9高校人数": int(self.df.get('is_c9', pd.Series([False] * len(self.df))).sum())
         }
+        
+        # 如果有985/211/C9标记，添加相应统计
+        if 'is_985' in self.df.columns:
+            uni_stats["985高校人数"] = int(self.df['is_985'].sum())
+        if 'is_211' in self.df.columns:
+            uni_stats["211高校人数"] = int(self.df['is_211'].sum())
+        if 'is_c9' in self.df.columns:
+            uni_stats["C9高校人数"] = int(self.df['is_c9'].sum())
         
         return {
             "title": "高校分布",
@@ -212,7 +234,15 @@ class VisualizationService:
     def work_years_distribution(self) -> Dict[str, Any]:
         """工作年限分布可视化数据"""
         # 检查是否有工作年限数据
-        if self.df.empty or 'total_work_years' not in self.df.columns:
+        if self.df.empty:
+            return {"error": "无法获取工作年限数据"}
+        
+        # 确定使用哪个字段
+        if 'total_work_years' in self.df.columns:
+            work_years_column = 'total_work_years'
+        elif 'company_years' in self.df.columns:
+            work_years_column = 'company_years'
+        else:
             return {"error": "无法获取工作年限数据"}
         
         # 创建工作年限分组
@@ -220,15 +250,15 @@ class VisualizationService:
         work_labels = ['3年以下', '3-5年', '5-10年', '10-15年', '15-20年', '20年以上']
         
         # 分组统计
-        work_groups = pd.cut(self.df['total_work_years'], bins=work_bins, labels=work_labels)
+        work_groups = pd.cut(self.df[work_years_column], bins=work_bins, labels=work_labels)
         work_counts = work_groups.value_counts().sort_index()
         
         # 计算工作年限统计信息
         work_stats = {
-            "平均工作年限": round(float(self.df['total_work_years'].mean()), 1),
-            "中位工作年限": round(float(self.df['total_work_years'].median()), 1),
-            "最短工作年限": round(float(self.df['total_work_years'].min()), 1),
-            "最长工作年限": round(float(self.df['total_work_years'].max()), 1)
+            "平均工作年限": round(float(self.df[work_years_column].mean()), 1),
+            "中位工作年限": round(float(self.df[work_years_column].median()), 1),
+            "最短工作年限": round(float(self.df[work_years_column].min()), 1),
+            "最长工作年限": round(float(self.df[work_years_column].max()), 1)
         }
         
         return {
@@ -262,16 +292,25 @@ class VisualizationService:
             符合条件的员工列表
         """
         if self.df.empty:
+            print(f"无法获取员工列表：数据为空")
             return []
+            
+        print(f"获取{visualization_type}类型下的{category}分类员工列表")
+        print(f"数据框列名: {list(self.df.columns)}")
             
         # 根据不同的可视化类型，应用不同的筛选条件
         if visualization_type == 'age':
             # 年龄分布
+            if 'age' not in self.df.columns:
+                print(f"无法获取年龄数据：'age'列不存在")
+                return []
+                
             age_bins = [0, 25, 30, 35, 40, 45, 50, 100]
             age_labels = ['25岁以下', '26-30岁', '31-35岁', '36-40岁', '41-45岁', '46-50岁', '50岁以上']
             
             # 找到对应的年龄范围
             if category not in age_labels:
+                print(f"无效的年龄分类: {category}")
                 raise ValueError(f"无效的年龄分类: {category}")
                 
             idx = age_labels.index(category)
@@ -287,13 +326,17 @@ class VisualizationService:
         elif visualization_type == 'department':
             # 部门分布
             if 'department' not in self.df.columns:
+                print(f"无法获取部门数据：'department'列不存在")
                 return []
                 
+            print(f"筛选部门: {category}")
+            print(f"可用部门: {self.df['department'].unique()}")
             filtered_df = self.df[self.df['department'] == category]
             
         elif visualization_type == 'gender':
             # 性别分布
             if 'gender' not in self.df.columns:
+                print(f"无法获取性别数据：'gender'列不存在")
                 return []
                 
             filtered_df = self.df[self.df['gender'] == category]
@@ -302,20 +345,31 @@ class VisualizationService:
             # 学历分布
             edu_column = 'education_level' if 'education_level' in self.df.columns else 'education'
             if edu_column not in self.df.columns:
+                print(f"无法获取学历数据：'{edu_column}'列不存在")
                 return []
                 
+            print(f"筛选学历: {category}")
+            print(f"可用学历: {self.df[edu_column].unique()}")
             filtered_df = self.df[self.df[edu_column] == category]
             
         elif visualization_type == 'university':
             # 高校分布
             if 'university' not in self.df.columns:
+                print(f"无法获取高校数据：'university'列不存在")
                 return []
                 
             filtered_df = self.df[self.df['university'] == category]
             
         elif visualization_type == 'work_years':
             # 工作年限分布
-            if 'total_work_years' not in self.df.columns:
+            work_years_column = None
+            if 'total_work_years' in self.df.columns:
+                work_years_column = 'total_work_years'
+            elif 'company_years' in self.df.columns:
+                work_years_column = 'company_years'
+            
+            if not work_years_column:
+                print(f"无法获取工作年限数据：相关列不存在")
                 return []
                 
             work_bins = [0, 3, 5, 10, 15, 20, 100]
@@ -323,6 +377,7 @@ class VisualizationService:
             
             # 找到对应的工作年限范围
             if category not in work_labels:
+                print(f"无效的工作年限分类: {category}")
                 raise ValueError(f"无效的工作年限分类: {category}")
                 
             idx = work_labels.index(category)
@@ -331,11 +386,15 @@ class VisualizationService:
             
             # 筛选符合条件的员工
             if idx == len(work_labels) - 1:  # 最后一个分类
-                filtered_df = self.df[(self.df['total_work_years'] >= min_years)]
+                filtered_df = self.df[(self.df[work_years_column] >= min_years)]
             else:
-                filtered_df = self.df[(self.df['total_work_years'] >= min_years) & (self.df['total_work_years'] < max_years)]
+                filtered_df = self.df[(self.df[work_years_column] >= min_years) & (self.df[work_years_column] < max_years)]
         else:
+            print(f"不支持的可视化类型: {visualization_type}")
             raise ValueError(f"不支持的可视化类型: {visualization_type}")
+        
+        # 打印筛选结果
+        print(f"筛选结果: 找到{len(filtered_df)}条记录")
             
         # 选择需要返回的列
         result_columns = ['id', 'name', 'gender', 'age', 'department', 'position']
