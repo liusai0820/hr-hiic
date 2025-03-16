@@ -41,3 +41,4 @@ Thumbs.db
 # 确保不提交敏感数据
 hiic-hr-app/backend/.env
 hiic-hr-app/data/
+hiic-hr-app/backend/.env
