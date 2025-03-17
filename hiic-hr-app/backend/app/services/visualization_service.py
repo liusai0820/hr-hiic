@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from typing import Dict, List, Any, Tuple, Optional
 from app.db.supabase import supabase_client
+import re
 
 class VisualizationService:
     """数据可视化服务"""
@@ -103,7 +104,11 @@ class VisualizationService:
             "部门总数": len(dept_counts),
             "平均人数": round(dept_counts.mean()),
             "最大部门": int(dept_counts.max()),
-            "最小部门": int(dept_counts.min())
+            "最小部门": int(dept_counts.min()),
+            "人员分布标准差": round(dept_counts.std(), 1),  # 新增：衡量部门人数分布的均衡性
+            "中位数部门规模": int(dept_counts.median()),  # 新增：中位数部门规模
+            "最大与平均比": round(dept_counts.max() / dept_counts.mean(), 1),  # 新增：最大部门与平均规模比例
+            "部门规模集中度": round(dept_counts.nlargest(3).sum() / dept_counts.sum() * 100)  # 新增：前三大部门占比
         }
         
         return {
@@ -122,20 +127,29 @@ class VisualizationService:
         
         # 获取性别分布
         gender_counts = self.df['gender'].value_counts()
-        
-        # 计算性别统计信息
         total = gender_counts.sum()
+        
+        # 计算性别比例
+        male_count = gender_counts.get('男', 0)
+        female_count = gender_counts.get('女', 0)
+        
+        # 计算性别比（男/女）
+        gender_ratio = round(male_count / female_count, 2) if female_count > 0 else 0
+        
+        # 计算统计信息
         gender_stats = {
-            "总人数": int(total)
+            "总人数": int(total),
+            "男性比例": round(male_count / total * 100) if total > 0 else 0,
+            "女性比例": round(female_count / total * 100) if total > 0 else 0,
+            "性别比": gender_ratio,  # 新增：男女比例
+            "男女差异": int(abs(male_count - female_count)),  # 新增：男女人数差异
+            "多数性别": "男" if male_count >= female_count else "女",  # 新增：多数性别
+            "性别多样性指数": round(1 - ((male_count/total)**2 + (female_count/total)**2), 2) if total > 0 else 0  # 新增：性别多样性指数(基于赫芬达尔指数)
         }
         
-        for gender, count in gender_counts.items():
-            percentage = round((count / total) * 100)
-            gender_stats[f"{gender}比例"] = percentage
-        
         return {
-            "title": "性别分布",
-            "description": "展示公司员工性别比例分布",
+            "title": "性别比例分布",
+            "description": "公司员工性别比例分布",
             "labels": gender_counts.index.tolist(),
             "values": gender_counts.values.tolist(),
             "data": {gender: int(count) for gender, count in gender_counts.items()},
@@ -147,58 +161,138 @@ class VisualizationService:
         if self.df.empty or 'age' not in self.df.columns:
             return {"error": "无法获取年龄数据"}
         
-        # 创建年龄分组
+        # 定义年龄段
         age_bins = [0, 25, 30, 35, 40, 45, 50, 100]
         age_labels = ['25岁以下', '26-30岁', '31-35岁', '36-40岁', '41-45岁', '46-50岁', '50岁以上']
         
-        # 分组统计
-        age_groups = pd.cut(self.df['age'], bins=age_bins, labels=age_labels)
-        age_counts = age_groups.value_counts().sort_index()
+        # 计算年龄分布
+        age_series = pd.cut(self.df['age'], bins=age_bins, labels=age_labels, right=False)
+        age_counts = age_series.value_counts().sort_index()
         
         # 计算年龄统计信息
         age_stats = {
-            "平均年龄": round(float(self.df['age'].mean()), 1),
-            "中位年龄": round(float(self.df['age'].median()), 1),
+            "平均年龄": round(self.df['age'].mean(), 1),
+            "中位年龄": int(self.df['age'].median()),
+            "最大年龄": int(self.df['age'].max()),
             "最小年龄": int(self.df['age'].min()),
-            "最大年龄": int(self.df['age'].max())
+            "年龄标准差": round(self.df['age'].std(), 1),  # 新增：年龄分布的离散程度
+            "青年比例": round(len(self.df[self.df['age'] <= 35]) / len(self.df) * 100),  # 新增：35岁及以下员工比例
+            "中年比例": round(len(self.df[(self.df['age'] > 35) & (self.df['age'] <= 50)]) / len(self.df) * 100),  # 新增：36-50岁员工比例
+            "资深比例": round(len(self.df[self.df['age'] > 50]) / len(self.df) * 100)  # 新增：50岁以上员工比例
         }
         
         return {
             "title": "年龄分布",
-            "description": "展示公司员工年龄段分布情况",
+            "description": "公司员工年龄段分布情况",
             "xAxis": age_counts.index.tolist(),
             "yAxis": age_counts.values.tolist(),
-            "data": {str(age): int(count) for age, count in age_counts.items()},
+            "data": {age: int(count) for age, count in age_counts.items()},
             "stats": age_stats
         }
     
     def education_distribution(self) -> Dict[str, Any]:
         """学历分布可视化数据"""
-        # 检查是否有教育数据
-        if self.df.empty or ('education_level' not in self.df.columns and 'education' not in self.df.columns):
+        if self.df.empty or ('education' not in self.df.columns and 'education_level' not in self.df.columns):
             return {"error": "无法获取学历数据"}
         
-        # 确定使用哪个字段
-        edu_column = 'education_level' if 'education_level' in self.df.columns else 'education'
+        # 确定使用哪个列作为学历
+        edu_col = 'education' if 'education' in self.df.columns else 'education_level'
         
         # 获取学历分布
-        edu_counts = self.df[edu_column].value_counts()
+        edu_counts = self.df[edu_col].value_counts()
+        
+        # 计算高学历比例（硕士及以上）
+        total = edu_counts.sum()
+        high_edu = edu_counts.get('博士', 0) + edu_counts.get('硕士', 0)
+        bachelor = edu_counts.get('本科', 0)
+        
+        # 计算海外学历占比
+        overseas_count = 0
+        if 'university' in self.df.columns:
+            overseas_count = self.df[self.df['university'].apply(
+                lambda x: isinstance(x, str) and (
+                    '海外' in x or 
+                    '国外' in x or 
+                    'University' in x or 
+                    'College' in x or
+                    'Institute' in x or
+                    (isinstance(x, str) and bool(re.match(r'^[A-Za-z]', x))) or
+                    '香港' in x or
+                    '澳门' in x or
+                    '台湾' in x
+                ) if isinstance(x, str) else False
+            )].shape[0]
+        
+        # 计算博士比例
+        doctor_count = 0
+        for key in edu_counts.keys():
+            if isinstance(key, str) and '博士' in key:
+                doctor_count += edu_counts[key]
+        
+        # 计算985/211院校比例
+        elite_count = 0
+        if 'is_985' in self.df.columns and 'is_211' in self.df.columns:
+            elite_count = self.df[(self.df['is_985'] == True) | (self.df['is_211'] == True)].shape[0]
+        elif 'university' in self.df.columns:
+            elite_universities = [
+                '清华', '北大', '复旦', '上海交通', '浙江大学', '南京大学', 
+                '中国科学技术大学', '武汉大学', '华中科技', '西安交通', 
+                '哈尔滨工业', '南开', '天津大学', '同济', '北京航空', '北京理工'
+            ]
+            elite_count = self.df[self.df['university'].apply(
+                lambda x: any(u in x for u in elite_universities) if isinstance(x, str) else False
+            )].shape[0]
         
         # 计算学历统计信息
-        total = edu_counts.sum()
-        edu_stats = {}
-        for edu, count in edu_counts.items():
-            percentage = round((count / total) * 100, 1)
-            edu_stats[f"{edu}比例"] = percentage
+        edu_stats = {
+            "高学历比例": round(high_edu / total * 100) if total > 0 else 0,
+            "本科比例": round(bachelor / total * 100) if total > 0 else 0,
+            "硕士及以上比例": round(high_edu / total * 100) if total > 0 else 0,
+            "博士比例": round(doctor_count / total * 100) if total > 0 else 0,
+            "最高学历人数": int(edu_counts.iloc[0]) if not edu_counts.empty else 0,
+            "最高学历占比": round(edu_counts.iloc[0] / total * 100) if not edu_counts.empty and total > 0 else 0,
+            "学历多样性指数": round(1 - sum((count/total)**2 for count in edu_counts), 2) if total > 0 else 0,
+            "海外学历占比": round(overseas_count / total * 100) if total > 0 else 0,
+            "985/211院校比例": round(elite_count / total * 100) if total > 0 else 0,
+            "学历结构评分": self._calculate_education_score(edu_counts)
+        }
         
         return {
             "title": "学历分布",
-            "description": "展示公司员工学历层次分布情况",
-            "xAxis": edu_counts.index.tolist(),
-            "yAxis": edu_counts.values.tolist(),
+            "description": "公司员工学历层次分布情况",
+            "labels": edu_counts.index.tolist(),
+            "values": edu_counts.values.tolist(),
             "data": {edu: int(count) for edu, count in edu_counts.items()},
             "stats": edu_stats
         }
+        
+    def _calculate_education_score(self, edu_counts):
+        """计算学历结构评分（满分100）"""
+        if edu_counts.empty:
+            return 0
+            
+        total = edu_counts.sum()
+        if total == 0:
+            return 0
+            
+        # 定义各学历权重
+        weights = {
+            '博士': 1.0,
+            '硕士': 0.8,
+            '本科': 0.6,
+            '大专': 0.4,
+            '高中': 0.2,
+            '其他': 0.1
+        }
+        
+        # 计算加权分数
+        score = 0
+        for edu, count in edu_counts.items():
+            weight = weights.get(edu, 0.1)  # 默认权重0.1
+            score += (count / total) * weight
+            
+        # 归一化到100分制
+        return round(score * 100, 0)
     
     def university_distribution(self) -> Dict[str, Any]:
         """高校分布可视化数据"""
@@ -233,42 +327,73 @@ class VisualizationService:
     
     def work_years_distribution(self) -> Dict[str, Any]:
         """工作年限分布可视化数据"""
-        # 检查是否有工作年限数据
-        if self.df.empty:
+        if self.df.empty or ('total_work_years' not in self.df.columns and 'work_years' not in self.df.columns):
             return {"error": "无法获取工作年限数据"}
         
-        # 确定使用哪个字段
-        if 'total_work_years' in self.df.columns:
-            work_years_column = 'total_work_years'
-        elif 'company_years' in self.df.columns:
-            work_years_column = 'company_years'
-        else:
-            return {"error": "无法获取工作年限数据"}
+        # 确定使用哪个列作为工作年限
+        work_years_col = 'total_work_years' if 'total_work_years' in self.df.columns else 'work_years'
         
-        # 创建工作年限分组
-        work_bins = [0, 3, 5, 10, 15, 20, 100]
-        work_labels = ['3年以下', '3-5年', '5-10年', '10-15年', '15-20年', '20年以上']
+        # 定义工作年限段
+        work_years_bins = [0, 1, 3, 5, 10, 15, 100]
+        work_years_labels = ['1年以下', '1-3年', '3-5年', '5-10年', '10-15年', '15年以上']
         
-        # 分组统计
-        work_groups = pd.cut(self.df[work_years_column], bins=work_bins, labels=work_labels)
-        work_counts = work_groups.value_counts().sort_index()
+        # 计算工作年限分布
+        work_years_series = pd.cut(self.df[work_years_col], bins=work_years_bins, labels=work_years_labels, right=False)
+        work_years_counts = work_years_series.value_counts().sort_index()
+        
+        # 计算各类员工比例
+        total = len(self.df)
+        junior_count = len(self.df[self.df[work_years_col] < 3])  # 3年以下为初级
+        mid_count = len(self.df[(self.df[work_years_col] >= 3) & (self.df[work_years_col] < 10)])  # 3-10年为中级
+        senior_count = len(self.df[self.df[work_years_col] >= 10])  # 10年以上为高级
         
         # 计算工作年限统计信息
-        work_stats = {
-            "平均工作年限": round(float(self.df[work_years_column].mean()), 1),
-            "中位工作年限": round(float(self.df[work_years_column].median()), 1),
-            "最短工作年限": round(float(self.df[work_years_column].min()), 1),
-            "最长工作年限": round(float(self.df[work_years_column].max()), 1)
+        work_years_stats = {
+            "平均工作年限": round(self.df[work_years_col].mean(), 1),
+            "中位工作年限": round(self.df[work_years_col].median(), 1),
+            "最长工作年限": int(self.df[work_years_col].max()),
+            "初级员工比例": round(junior_count / total * 100) if total > 0 else 0,  # 新增：3年以下员工比例
+            "中级员工比例": round(mid_count / total * 100) if total > 0 else 0,  # 新增：3-10年员工比例
+            "资深员工比例": round(senior_count / total * 100) if total > 0 else 0,  # 新增：10年以上员工比例
+            "经验结构评分": self._calculate_experience_score(self.df[work_years_col]),  # 新增：经验结构评分
+            "经验多样性指数": round(1 - sum((count/total)**2 for count in work_years_counts), 2) if total > 0 else 0  # 新增：经验多样性指数
         }
         
         return {
             "title": "工作年限分布",
-            "description": "展示员工工作经验年限分布情况",
-            "xAxis": work_counts.index.tolist(),
-            "yAxis": work_counts.values.tolist(),
-            "data": {str(work): int(count) for work, count in work_counts.items()},
-            "stats": work_stats
+            "description": "员工工作年限分布情况",
+            "xAxis": work_years_counts.index.tolist(),
+            "yAxis": work_years_counts.values.tolist(),
+            "data": {str(year): int(count) for year, count in work_years_counts.items()},
+            "stats": work_years_stats
         }
+        
+    def _calculate_experience_score(self, work_years_series):
+        """计算经验结构评分（满分100）"""
+        if work_years_series.empty:
+            return 0
+            
+        # 计算各经验段比例
+        total = len(work_years_series)
+        if total == 0:
+            return 0
+            
+        junior = len(work_years_series[work_years_series < 3]) / total
+        mid = len(work_years_series[(work_years_series >= 3) & (work_years_series < 10)]) / total
+        senior = len(work_years_series[work_years_series >= 10]) / total
+        
+        # 理想的经验结构比例（可根据行业特点调整）
+        # 初级:中级:高级 = 3:5:2
+        ideal_junior = 0.3
+        ideal_mid = 0.5
+        ideal_senior = 0.2
+        
+        # 计算与理想结构的偏差（越小越好）
+        deviation = abs(junior - ideal_junior) + abs(mid - ideal_mid) + abs(senior - ideal_senior)
+        
+        # 转换为分数（满分100）
+        score = 100 * (1 - deviation / 2)  # 最大偏差为2，归一化
+        return round(max(0, min(100, score)), 0)  # 确保分数在0-100之间
     
     def get_all_visualizations(self) -> Dict[str, Dict[str, Any]]:
         """获取所有可视化数据"""

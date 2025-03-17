@@ -3,15 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PageLayout from '@/components/PageLayout';
-import { employeeApi } from '@/services/api';
 
 interface Employee {
-  id: number;
+  id: string | number;
+  name?: string;
   姓名: string;
   性别: string;
   部门: string;
   职位: string;
-  学历: string;
+  学历?: string;
   年龄: number;
   [key: string]: string | number | null | undefined;
 }
@@ -31,7 +31,16 @@ export default function EmployeeDetailPage() {
         if (isNaN(id)) {
           throw new Error('无效的员工ID');
         }
-        const data = await employeeApi.getEmployeeById(id);
+        
+        // 使用fetch API直接获取数据
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api';
+        const response = await fetch(`${apiUrl}/employees/${id}`);
+        
+        if (!response.ok) {
+          throw new Error(`获取员工数据失败: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
         setEmployee(data);
         setError(null);
       } catch (err) {
@@ -124,7 +133,7 @@ export default function EmployeeDetailPage() {
       .trim();
     
     // 2. 尝试按照年份分割文本
-    const yearPattern = /\b(20\d{2})\b/g; // 匹配2000-2099年的年份
+    const yearPattern = /\b(20\d{2})[年-]?/g; // 匹配2000-2099年的年份，可能带有"年"或"-"
     const years = [...cleaned.matchAll(yearPattern)].map(m => m[0]);
     
     if (years.length > 0) {
@@ -151,7 +160,8 @@ export default function EmployeeDetailPage() {
         
         const content = cleaned.substring(index, endIndex).trim();
         if (content) {
-          segments.push(content);
+          // 清理年份后的标点符号
+          segments.push(content.replace(/^(20\d{2})[年-]?[,，:：\s]+/, '$1: '));
         }
         
         lastIndex = endIndex;
@@ -197,8 +207,8 @@ export default function EmployeeDetailPage() {
       <div className="space-y-3">
         {formattedItems.map((item, index) => {
           // 尝试提取年份
-          const yearMatch = item.match(/\b(20\d{2})\b/);
-          const year = yearMatch ? yearMatch[0] : null;
+          const yearMatch = item.match(/\b(20\d{2})[年-]?/);
+          const year = yearMatch ? yearMatch[1] : null; // 只提取数字部分
           
           // 如果有年份，将其作为标题，其余作为内容
           let title = '';
@@ -206,14 +216,14 @@ export default function EmployeeDetailPage() {
           
           if (year) {
             // 如果年份在开头，将其作为标题
-            if (item.startsWith(year)) {
+            if (item.startsWith(year) || item.startsWith(`${year}年`) || item.startsWith(`${year}-`)) {
               // 清理年份后面的逗号和空格
-              const yearEndIndex = year.length;
+              const yearEndIndex = item.indexOf(year) + year.length;
               let contentStartIndex = yearEndIndex;
               
-              // 跳过年份后面的逗号、空格等分隔符
+              // 跳过年份后面的"年"字和其他分隔符
               while (contentStartIndex < item.length && 
-                    [',', '，', ':', '：', ' ', '\t'].includes(item[contentStartIndex])) {
+                    ['年', '-', ',', '，', ':', '：', ' ', '\t'].includes(item[contentStartIndex])) {
                 contentStartIndex++;
               }
               
@@ -256,7 +266,7 @@ export default function EmployeeDetailPage() {
               <div className="flex-1">
                 {title ? (
                   <>
-                    <div className="font-medium text-blue-600 dark:text-blue-400">{title}</div>
+                    <div className="font-medium text-blue-600 dark:text-blue-400">{title}年</div>
                     {content && <div>{content}</div>}
                   </>
                 ) : (
