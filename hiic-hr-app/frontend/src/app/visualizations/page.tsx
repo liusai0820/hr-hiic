@@ -183,6 +183,17 @@ export default function VisualizationsPage() {
     }
   }, []);
 
+  // 从URL参数中获取活动标签
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam && ['department', 'gender', 'age', 'education', 'university', 'work_years', 'employees'].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const fetchVisualizations = async () => {
       try {

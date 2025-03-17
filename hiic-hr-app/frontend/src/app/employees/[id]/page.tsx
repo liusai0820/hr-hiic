@@ -33,14 +33,16 @@ export default function EmployeeDetailPage() {
         }
         
         // 使用fetch API直接获取数据
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api';
-        const response = await fetch(`${apiUrl}/employees/${id}`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        console.log(`正在获取员工数据，API URL: ${apiUrl}/api/employees/${id}`);
+        const response = await fetch(`${apiUrl}/api/employees/${id}`);
         
         if (!response.ok) {
           throw new Error(`获取员工数据失败: ${response.status} ${response.statusText}`);
         }
         
         const data = await response.json();
+        console.log('获取到员工数据:', data);
         setEmployee(data);
         setError(null);
       } catch (err) {
@@ -58,22 +60,22 @@ export default function EmployeeDetailPage() {
   const personalInfo = [
     { label: '姓名', key: '姓名' },
     { label: '性别', key: '性别' },
-    { label: '年龄', key: '年龄' },
-    { label: '出生日期', key: '出生日期' },
+    { label: '年龄', key: 'age' },
+    { label: '出生日期', key: 'birth_date' },
   ];
 
   const workInfo = [
     { label: '部门', key: '部门' },
     { label: '职位', key: '职位' },
-    { label: '入职日期', key: '入职日期' },
-    { label: '工作年限', key: '工作年限' },
+    { label: '入职日期', key: 'hire_date' },
+    { label: '工作年限', key: 'total_work_years' },
   ];
 
   const educationInfo = [
-    { label: '学历', key: '学历' },
-    { label: '毕业院校', key: '毕业院校' },
-    { label: '专业', key: '专业' },
-    { label: '毕业日期', key: '毕业日期' },
+    { label: '学历', key: 'education_level' },
+    { label: '毕业院校', key: 'university' },
+    { label: '专业', key: 'major' },
+    { label: '毕业日期', key: 'graduation_date' },
   ];
 
   // 获取员工的晋升记录和获奖情况
@@ -86,7 +88,7 @@ export default function EmployeeDetailPage() {
   // 根据性别选择头像背景色
   const getAvatarColor = () => {
     if (!employee) return 'bg-gray-300';
-    return employee.性别 === '女' ? 'bg-purple-500' : 'bg-blue-500';
+    return employee.性别 === '女' ? 'bg-pink-500' : 'bg-blue-500';
   };
 
   // 处理职业发展信息中的特殊字符
@@ -292,6 +294,81 @@ export default function EmployeeDetailPage() {
     }
   };
 
+  // 获取字段值，支持多种可能的键名
+  const getFieldValue = (key: string): string | number | null | undefined => {
+    if (!employee) return undefined;
+    
+    // 直接匹配键名
+    if (employee[key] !== undefined) return employee[key];
+    
+    // 尝试匹配中文键名
+    const chineseKeyMap: Record<string, string> = {
+      'age': '年龄',
+      'birth_date': '出生日期',
+      'hire_date': '入职日期',
+      'total_work_years': '工作年限',
+      'education_level': '学历',
+      'university': '毕业院校',
+      'major': '专业',
+      'graduation_date': '毕业日期',
+      'department': '部门',
+      'position': '职位',
+      'company_years': '在职年限',
+      'gender': '性别',
+      'name': '姓名'
+    };
+    
+    if (chineseKeyMap[key] && employee[chineseKeyMap[key]] !== undefined) {
+      return employee[chineseKeyMap[key]];
+    }
+    
+    // 尝试匹配英文键名
+    const englishKeyMap: Record<string, string> = {
+      '年龄': 'age',
+      '出生日期': 'birth_date',
+      '入职日期': 'hire_date',
+      '工作年限': 'total_work_years',
+      '学历': 'education_level',
+      '毕业院校': 'university',
+      '专业': 'major',
+      '毕业日期': 'graduation_date',
+      '部门': 'department',
+      '职位': 'position',
+      '在职年限': 'company_years',
+      '性别': 'gender',
+      '姓名': 'name'
+    };
+    
+    if (englishKeyMap[key] && employee[englishKeyMap[key]] !== undefined) {
+      return employee[englishKeyMap[key]];
+    }
+    
+    // 尝试匹配其他可能的键名
+    const alternativeKeyMap: Record<string, string[]> = {
+      'age': ['current_age'],
+      'birth_date': ['birthdate', 'dob', 'date_of_birth'],
+      'hire_date': ['hiredate', 'date_of_hire', 'employment_date'],
+      'total_work_years': ['work_years', 'years_of_experience', 'experience_years'],
+      'education_level': ['education', 'degree_level'],
+      'university': ['school', 'college', 'alma_mater'],
+      'major': ['field_of_study', 'study_field'],
+      'department': ['dept', 'division'],
+      'position': ['title', 'job_title', 'role']
+    };
+    
+    for (const [targetKey, alternativeKeys] of Object.entries(alternativeKeyMap)) {
+      if (key === targetKey) {
+        for (const altKey of alternativeKeys) {
+          if (employee[altKey] !== undefined) {
+            return employee[altKey];
+          }
+        }
+      }
+    }
+    
+    return undefined;
+  };
+
   return (
     <PageLayout>
       <div className="w-full min-h-[calc(100vh-var(--header-height))] flex flex-col">
@@ -328,7 +405,18 @@ export default function EmployeeDetailPage() {
                 <div className="flex flex-col md:flex-row md:items-center gap-6">
                   <div className="flex-shrink-0">
                     <div className={`w-24 h-24 ${getAvatarColor()} rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-md`}>
-                      {employee.姓名?.charAt(0) || '?'}
+                      {employee.性别 === '女' ? 
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="8" r="5" />
+                          <path d="M12 13v8" />
+                          <path d="M9 18h6" />
+                        </svg>
+                        : 
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="8" r="5" />
+                          <path d="M20 21v-4a8 8 0 0 0-16 0v4" />
+                        </svg>
+                      }
                     </div>
                   </div>
                   <div className="flex-grow">
@@ -336,18 +424,18 @@ export default function EmployeeDetailPage() {
                       <div>
                         <h1 className="text-3xl font-bold mb-1">{employee.姓名}</h1>
                         <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                            {employee.职位}
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${employee.性别 === '女' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'}`}>
+                            {employee.职位 || getFieldValue('position')}
                           </span>
                           <span className="text-gray-400 dark:text-gray-500">•</span>
-                          <span>{employee.部门}</span>
+                          <span>{employee.部门 || getFieldValue('department')}</span>
                           <span className="text-gray-400 dark:text-gray-500">•</span>
                           <span>ID: {employee.id}</span>
                         </div>
                       </div>
                       <div className="mt-4 md:mt-0">
                         <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                          在职 {employee.工作年限} 年
+                          在职 {getFieldValue('company_years') || getFieldValue('total_work_years') || '-'} 年
                         </div>
                       </div>
                     </div>
@@ -370,9 +458,9 @@ export default function EmployeeDetailPage() {
                           <div key={item.key} className="flex justify-between items-center py-2 border-b border-[var(--border)] last:border-0">
                             <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{item.label}</dt>
                             <dd className="text-sm font-semibold">
-                              {item.key === '出生日期' 
-                                ? formatDate(employee[item.key]) 
-                                : employee[item.key] !== undefined ? String(employee[item.key]) : '-'}
+                              {item.key === '出生日期' || item.key === 'birth_date' || item.key === '入职日期' || item.key === 'hire_date'
+                                ? formatDate(getFieldValue(item.key)) 
+                                : getFieldValue(item.key) !== undefined ? String(getFieldValue(item.key)) : '-'}
                             </dd>
                           </div>
                         ))}
@@ -391,9 +479,9 @@ export default function EmployeeDetailPage() {
                           <div key={item.key} className="flex justify-between items-center py-2 border-b border-[var(--border)] last:border-0">
                             <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{item.label}</dt>
                             <dd className="text-sm font-semibold">
-                              {item.key === '入职日期' 
-                                ? formatDate(employee[item.key]) 
-                                : employee[item.key] !== undefined ? String(employee[item.key]) : '-'}
+                              {item.key === '出生日期' || item.key === 'birth_date' || item.key === '入职日期' || item.key === 'hire_date'
+                                ? formatDate(getFieldValue(item.key)) 
+                                : getFieldValue(item.key) !== undefined ? String(getFieldValue(item.key)) : '-'}
                             </dd>
                           </div>
                         ))}
@@ -415,9 +503,9 @@ export default function EmployeeDetailPage() {
                           <div key={item.key} className="flex justify-between items-center py-2 border-b border-[var(--border)] last:border-0">
                             <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{item.label}</dt>
                             <dd className="text-sm font-semibold">
-                              {item.key === '毕业日期' 
-                                ? formatDate(employee[item.key]) 
-                                : employee[item.key] !== undefined ? String(employee[item.key]) : '-'}
+                              {item.key === '毕业日期' || item.key === 'graduation_date'
+                                ? formatDate(getFieldValue(item.key)) 
+                                : getFieldValue(item.key) !== undefined ? String(getFieldValue(item.key)) : '-'}
                             </dd>
                           </div>
                         ))}
