@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 interface Employee {
   id: string;
   name: string;
-  gender: string;
+  性别: string;
   age: number;
   department: string;
   position?: string;
@@ -85,7 +85,7 @@ export default function Home() {
         {
           id: "1",
           name: "张三",
-          gender: "男",
+          性别: "男",
           age: 28,
           department: "人力资源部",
           position: "HR专员",
@@ -94,7 +94,7 @@ export default function Home() {
         {
           id: "2",
           name: "李四",
-          gender: "女",
+          性别: "女",
           age: 32,
           department: "财务部",
           position: "财务经理",
@@ -103,7 +103,7 @@ export default function Home() {
         {
           id: "3",
           name: "王五",
-          gender: "男",
+          性别: "男",
           age: 35,
           department: "技术部",
           position: "技术总监",
@@ -336,7 +336,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-semibold mb-2">AI对话问答</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                基于HR数据回答您的问题，提供智能化的人力资源分析。
+                基于HR数据回答问题，提供智能化的人力资源分析。
               </p>
               {user || forceRender ? (
                 <Link href="/chat" className="text-blue-600 hover:text-blue-700 font-medium flex items-center">
@@ -364,7 +364,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-semibold mb-2">数据可视化</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                查看部门、性别、年龄等多维度的HR数据可视化图表和员工信息。
+                查看部门、年龄等多维度员工信息、可视化图表。
               </p>
               {user || forceRender ? (
                 <Link href="/visualizations" className="text-green-600 hover:text-green-700 font-medium flex items-center">
@@ -396,7 +396,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-semibold mb-2">绩效分析</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                员工绩效数据分析与可视化，帮助管理者做出更明智的决策。
+                员工绩效分析与可视化，帮助管理者做出科学决策。
               </p>
               <span className="text-gray-500 font-medium flex items-center cursor-not-allowed">
                 开发中
@@ -418,7 +418,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-semibold mb-2">人才发展</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                员工培训、晋升轨迹分析，助力人才培养与职业发展规划。
+                员工培训、晋升轨迹分析，助力人才培养与职业规划。
               </p>
               <span className="text-gray-500 font-medium flex items-center cursor-not-allowed">
                 开发中

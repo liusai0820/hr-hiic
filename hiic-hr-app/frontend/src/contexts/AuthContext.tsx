@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isApproved, setIsApproved] = useState(true);
+  const [isApproved, setIsApproved] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const router = useRouter();
 
@@ -113,7 +113,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         setUser(session.user);
       } else {
-        console.log('AuthContext - 未找到有效会话');
+        console.log('AuthContext - 未找到有效会话，尝试从localStorage恢复');
+        
+        // 尝试从localStorage恢复会话
+        try {
+          const storedSession = localStorage.getItem('hiic-hr-auth');
+          if (storedSession) {
+            const sessionData = JSON.parse(storedSession);
+            if (sessionData.user) {
+              console.log('AuthContext - 从localStorage恢复用户会话');
+              setUser(sessionData.user);
+              
+              // 尝试刷新会话
+              refreshSession().catch(e => {
+                console.error('AuthContext - 刷新会话失败:', e);
+              });
+              
+              return; // 成功从localStorage恢复，提前返回
+            }
+          }
+        } catch (e) {
+          console.error('AuthContext - 从localStorage恢复会话失败:', e);
+        }
+        
+        // 如果无法从localStorage恢复，则设置用户为null
+        console.log('AuthContext - 无法从localStorage恢复会话，设置用户为null');
         setUser(null);
         
         // 清除localStorage中的会话
@@ -126,6 +150,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       console.error('AuthContext - 检查用户出错:', error.message);
       setError(error.message);
+      
+      // 尝试从localStorage恢复会话
+      try {
+        const storedSession = localStorage.getItem('hiic-hr-auth');
+        if (storedSession) {
+          const sessionData = JSON.parse(storedSession);
+          if (sessionData.user) {
+            console.log('AuthContext - 从localStorage恢复用户会话（错误恢复）');
+            setUser(sessionData.user);
+            return; // 成功从localStorage恢复，提前返回
+          }
+        }
+      } catch (e) {
+        console.error('AuthContext - 从localStorage恢复会话失败:', e);
+      }
+      
       setUser(null);
     } finally {
       setLoading(false);
@@ -180,6 +220,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  // 检查用户审批状态
+  const checkApprovalStatus = async (user: User) => {
+    if (!user?.user_metadata) return false;
+    return user.user_metadata.approved === true;
+  };
+
+  // 检查用户是否已完善个人信息
+  const hasCompletedProfile = (user: User | null) => {
+    if (!user?.user_metadata) return false;
+    const { 姓名, 性别, 年龄, 部门 } = user.user_metadata;
+    return Boolean(姓名 && 性别 && 年龄 && 部门);
+  };
+
   // 登录函数
   const signIn = async (email: string, password: string) => {
     try {
@@ -203,10 +256,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error('登录失败，未能获取用户信息');
       }
 
+      // 检查用户是否已被审批
+      const isUserApproved = await checkApprovalStatus(data.user);
+      if (!isUserApproved) {
+        throw new Error('您的账号正在等待管理员审批，请稍后再试');
+      }
+
+      setIsApproved(true);
       console.log('AuthContext - 登录成功:', data.user.email);
       
       // 立即设置用户状态
       setUser(data.user);
+      
+      // 检查是否已完善个人信息
+      const profileCompleted = hasCompletedProfile(data.user);
+      if (!profileCompleted) {
+        console.log('AuthContext - 用户未完善个人信息，重定向到设置页面');
+        router.push('/profile/setup');
+        return data;
+      }
+
+      // 如果是管理员且已完善信息，重定向到管理页面
+      if (data.user.user_metadata?.role === 'admin') {
+        router.push('/admin/users');
+      } else {
+        router.push('/chat');
+      }
       
       // 强制保存会话到localStorage和cookie
       if (data.session) {

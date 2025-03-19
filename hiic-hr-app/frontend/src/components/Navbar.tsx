@@ -7,7 +7,34 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { user, isApproved, signOut } = useAuth();
+  const [localUser, setLocalUser] = useState<any>(null);
   const router = useRouter();
+  
+  // 检查localStorage中的用户信息
+  useEffect(() => {
+    try {
+      const storedSession = localStorage.getItem('hiic-hr-auth');
+      if (storedSession) {
+        const sessionData = JSON.parse(storedSession);
+        if (sessionData.user) {
+          console.log('Navbar - 从localStorage获取到用户信息');
+          setLocalUser(sessionData.user);
+        }
+      }
+    } catch (e) {
+      console.error('Navbar - 从localStorage获取用户信息失败:', e);
+    }
+  }, []);
+  
+  // 当user变化时更新localUser
+  useEffect(() => {
+    if (user) {
+      setLocalUser(user);
+    }
+  }, [user]);
+  
+  // 使用localUser或user作为当前用户状态
+  const currentUser = user || localUser;
   
   // 添加超时自动重置状态
   useEffect(() => {
@@ -27,7 +54,7 @@ export default function Navbar() {
 
   // 处理登录/注销
   const handleAuthAction = async () => {
-    if (user) {
+    if (currentUser) {
       // 如果已经在加载中，不重复处理
       if (isLoading) return;
       
@@ -95,14 +122,14 @@ export default function Navbar() {
   };
 
   // 判断是否为管理员
-  const isAdmin = user?.user_metadata?.role === 'admin';
+  const isAdmin = currentUser?.user_metadata?.role === 'admin';
 
   // 处理导航链接点击
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     e.preventDefault();
     console.log(`Navbar - 处理导航链接点击: ${path}`);
     
-    if (!user) {
+    if (!currentUser) {
       console.log('Navbar - 用户未登录，重定向到登录页');
       window.location.href = `/login?redirect=${encodeURIComponent(path)}`;
     } else {
@@ -116,7 +143,7 @@ export default function Navbar() {
         
         // 无论是否存在，都重新保存会话信息
         const sessionData = {
-          user: user,
+          user: currentUser,
           timestamp: new Date().toISOString()
         };
         localStorage.setItem('hiic-hr-auth', JSON.stringify(sessionData));
@@ -153,7 +180,7 @@ export default function Navbar() {
           {/* 桌面导航 */}
           <div className="hidden md:flex items-center space-x-8">
             <Link href="/" className="nav-link">首页</Link>
-            {user && (
+            {currentUser && (
               <>
                 <a 
                   href="/chat" 
@@ -169,19 +196,12 @@ export default function Navbar() {
                 >
                   数据可视化
                 </a>
-                <a 
-                  href="/employees" 
-                  className="nav-link"
-                  onClick={(e) => handleNavClick(e, '/employees')}
-                >
-                  员工数据
-                </a>
               </>
             )}
           </div>
           
           <button 
-            className={`${user ? 'bg-red-500 hover:bg-red-600' : 'btn-primary'} ml-6 px-4 py-2 rounded-md text-white font-medium transition-colors ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
+            className={`${currentUser ? 'bg-red-500 hover:bg-red-600' : 'btn-primary'} ml-6 px-4 py-2 rounded-md text-white font-medium transition-colors ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
             onClick={handleAuthAction}
             disabled={isLoading}
           >
@@ -193,7 +213,7 @@ export default function Navbar() {
                 </svg>
                 处理中
               </span>
-            ) : user ? '注销' : '登录'}
+            ) : currentUser ? '注销' : '登录'}
           </button>
           
           {/* 移动端菜单按钮 */}
@@ -224,7 +244,7 @@ export default function Navbar() {
             >
               首页
             </Link>
-            {user && (
+            {currentUser && (
               <>
                 <a 
                   href="/chat" 
@@ -246,16 +266,6 @@ export default function Navbar() {
                 >
                   数据可视化
                 </a>
-                <a 
-                  href="/employees" 
-                  className="block py-2 px-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 smooth-transition"
-                  onClick={(e) => {
-                    setIsMenuOpen(false);
-                    handleNavClick(e, '/employees');
-                  }}
-                >
-                  员工数据
-                </a>
               </>
             )}
             
@@ -267,7 +277,7 @@ export default function Navbar() {
               }}
               disabled={isLoading}
             >
-              {isLoading ? '处理中...' : (user ? '注销' : '登录')}
+              {isLoading ? '处理中...' : currentUser ? '注销' : '登录'}
             </button>
           </div>
         </div>

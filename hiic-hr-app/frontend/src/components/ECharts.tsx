@@ -7,9 +7,10 @@ interface EChartsProps {
   option: any; // 使用any类型避免复杂的类型问题
   style?: React.CSSProperties;
   className?: string;
+  onEvents?: Record<string, Function>; // 添加事件处理
 }
 
-const ECharts: React.FC<EChartsProps> = ({ option, style, className }) => {
+const ECharts: React.FC<EChartsProps> = ({ option, style, className, onEvents }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
 
@@ -22,6 +23,14 @@ const ECharts: React.FC<EChartsProps> = ({ option, style, className }) => {
       
       // 设置图表选项
       chartInstance.current.setOption(option, true);
+      
+      // 添加事件处理
+      if (onEvents && chartInstance.current) {
+        Object.keys(onEvents).forEach(eventName => {
+          chartInstance.current?.off(eventName);
+          chartInstance.current?.on(eventName, onEvents[eventName]);
+        });
+      }
     }
 
     // 窗口大小变化时调整图表大小
@@ -33,10 +42,18 @@ const ECharts: React.FC<EChartsProps> = ({ option, style, className }) => {
     // 清理函数
     return () => {
       window.removeEventListener('resize', handleResize);
+      
+      // 移除事件监听
+      if (onEvents && chartInstance.current) {
+        Object.keys(onEvents).forEach(eventName => {
+          chartInstance.current?.off(eventName);
+        });
+      }
+      
       chartInstance.current?.dispose();
       chartInstance.current = null;
     };
-  }, [option]);
+  }, [option, onEvents]);
 
   return (
     <div 

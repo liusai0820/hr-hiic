@@ -2,10 +2,23 @@
 
 import { useState, useEffect } from 'react';
 import PageLayout from '@/components/PageLayout';
-import { chatApi } from '@/services/api';
+import { chatApi } from '@/api/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
+import { getAvatarByAgeAndGender } from '@/utils/avatarUtils';
+
+interface User {
+  id: string;
+  email: string;
+  user_metadata?: {
+    姓名?: string;
+    性别?: string;
+    年龄?: number;
+    部门?: string;
+    职位?: string;
+  };
+}
 
 interface Message {
   role: 'user' | 'assistant';
@@ -26,6 +39,7 @@ export default function ChatPage() {
   const [forceRender, setForceRender] = useState(false);
   const [localUser, setLocalUser] = useState<any>(null);
   const [showExamples, setShowExamples] = useState(true);
+  const [apiHealthy, setApiHealthy] = useState<boolean | null>(null);
 
   // 添加超时保护，防止页面卡在加载状态
   useEffect(() => {
@@ -60,6 +74,28 @@ export default function ChatPage() {
     };
   }, [authLoading]);
 
+  // 添加API健康检查
+  useEffect(() => {
+    const checkApiHealth = async () => {
+      try {
+        console.log('聊天页面 - 检查API健康状态');
+        const isHealthy = await chatApi.checkHealth();
+        console.log('聊天页面 - API健康状态:', isHealthy);
+        setApiHealthy(isHealthy);
+        
+        if (!isHealthy) {
+          setPageError('API服务不可用，请稍后再试');
+        }
+      } catch (error) {
+        console.error('聊天页面 - 检查API健康状态失败:', error);
+        setApiHealthy(false);
+        setPageError('无法连接到API服务，请检查网络连接');
+      }
+    };
+    
+    checkApiHealth();
+  }, []);
+
   // 页面加载时检查认证状态
   useEffect(() => {
     // 检查是否有认证信息
@@ -74,6 +110,18 @@ export default function ChatPage() {
         localStorage.setItem('hiic-hr-auth', sessionStr);
         localStorage.setItem('supabase.auth.token', sessionStr);
         document.cookie = `hiic-hr-auth=${encodeURIComponent(sessionStr)}; path=/; max-age=86400; SameSite=Lax`;
+        
+        // 确保Supabase会话也被设置
+        try {
+          supabase.auth.setSession({
+            access_token: window.hiicHrSession.access_token || '',
+            refresh_token: window.hiicHrSession.refresh_token || ''
+          }).catch((e: Error) => {
+            console.error('聊天页面 - 设置Supabase会话失败:', e);
+          });
+        } catch (e) {
+          console.error('聊天页面 - 设置Supabase会话出错:', e);
+        }
         
         console.log('聊天页面 - 已从全局变量同步会话到存储');
         return;
@@ -98,6 +146,16 @@ export default function ChatPage() {
             document.cookie = `hiic-hr-auth=${encodeURIComponent(supabaseAuthData)}; path=/; max-age=86400; SameSite=Lax`;
             if (typeof window !== 'undefined') {
               window.hiicHrSession = userData;
+              
+              // 确保Supabase会话也被设置
+              if (userData.access_token) {
+                supabase.auth.setSession({
+                  access_token: userData.access_token,
+                  refresh_token: userData.refresh_token || ''
+                }).catch((e: Error) => {
+                  console.error('聊天页面 - 设置Supabase会话失败:', e);
+                });
+              }
             }
             
             console.log('聊天页面 - 已从备用存储恢复会话');
@@ -122,6 +180,16 @@ export default function ChatPage() {
                   
                   if (typeof window !== 'undefined') {
                     window.hiicHrSession = userData;
+                    
+                    // 确保Supabase会话也被设置
+                    if (userData.access_token) {
+                      supabase.auth.setSession({
+                        access_token: userData.access_token,
+                        refresh_token: userData.refresh_token || ''
+                      }).catch((e: Error) => {
+                        console.error('聊天页面 - 设置Supabase会话失败:', e);
+                      });
+                    }
                   }
                   
                   console.log('聊天页面 - 已从cookie恢复会话');
@@ -158,26 +226,19 @@ export default function ChatPage() {
           if (typeof window !== 'undefined') {
             window.hiicHrSession = userData;
             console.log('聊天页面 - 已同步会话到全局变量');
+            
+            // 确保Supabase会话也被设置
+            if (userData.access_token) {
+              supabase.auth.setSession({
+                access_token: userData.access_token,
+                refresh_token: userData.refresh_token || ''
+              }).catch((e: Error) => {
+                console.error('聊天页面 - 设置Supabase会话失败:', e);
+              });
+            }
           }
         } catch (parseError) {
           console.error('聊天页面 - 解析localStorage中的用户信息失败:', parseError);
-        }
-      }
-      
-      // 强制刷新Supabase会话
-      if (typeof window !== 'undefined' && window.hiicHrSession) {
-        try {
-          // 这里不需要等待结果，只是触发一下刷新
-          supabase.auth.setSession({
-            access_token: window.hiicHrSession.access_token || '',
-            refresh_token: window.hiicHrSession.refresh_token || ''
-          }).catch((e: Error) => {
-            console.error('聊天页面 - 设置Supabase会话失败:', e);
-          });
-          
-          console.log('聊天页面 - 已触发Supabase会话刷新');
-        } catch (e: unknown) {
-          console.error('聊天页面 - 刷新Supabase会话失败:', e);
         }
       }
     } catch (e) {
@@ -236,7 +297,7 @@ export default function ChatPage() {
         
         // 添加AI回复
         console.log('聊天页面 - 添加AI回复到消息列表');
-        setMessages(prev => [...prev, { role: 'assistant', content: response.response }]);
+        setMessages(prev => [...prev, { role: 'assistant', content: response }]);
       } catch (apiError: any) {
         clearTimeout(timeoutId);
         console.error('聊天页面 - API错误:', apiError);
@@ -272,6 +333,16 @@ export default function ChatPage() {
     setInput(question);
   };
 
+  // 从用户元数据中获取性别和年龄
+  const getUserMetadata = (user: User | null) => {
+    if (!user?.user_metadata) return { gender: '男', age: 30 };
+    const { 性别, 年龄 } = user.user_metadata;
+    return {
+      gender: 性别 || '男',
+      age: 年龄 || 30
+    };
+  };
+
   // 如果页面出错，显示错误信息和重试按钮
   if (pageError) {
     return (
@@ -283,6 +354,23 @@ export default function ChatPage() {
             onClick={() => window.location.reload()}
           >
             刷新页面
+          </button>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // 如果API不健康，显示提示
+  if (apiHealthy === false) {
+    return (
+      <PageLayout>
+        <div className="w-full min-h-[calc(100vh-var(--header-height))] flex flex-col items-center justify-center">
+          <div className="text-red-500 mb-4">API服务不可用，请稍后再试</div>
+          <button 
+            className="btn-primary" 
+            onClick={() => window.location.reload()}
+          >
+            重试
           </button>
         </div>
       </PageLayout>
@@ -337,16 +425,54 @@ export default function ChatPage() {
           <div className="w-48 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hidden md:block">
             <div className="p-3">
               <div className="flex flex-col space-y-1">
-                <button className="px-3 py-2 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-medium text-left">
-                  常规对话
-                </button>
-                <button className="px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 text-sm font-medium text-left hover:bg-gray-100 dark:hover:bg-gray-700">
-                  分组对话
-                </button>
-                <button className="px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 text-sm font-medium text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between">
-                  <span>创建新对话</span>
-                  <span className="text-xs bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">N</span>
-                </button>
+                <div className="px-3 py-2 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-medium text-left">
+                  AI对话
+                </div>
+                <div className="px-3 py-2 text-gray-500 dark:text-gray-400 text-xs">
+                  基于HR数据的智能问答
+                </div>
+                <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 px-3">
+                    示例问题
+                  </div>
+                  <div className="space-y-1">
+                    {[
+                      '公司有多少员工？',
+                      '各部门的人数分布如何？',
+                      '员工的平均年龄是多少？',
+                      '男女比例是多少？'
+                    ].map((question, index) => (
+                      <button
+                        key={index}
+                        className="w-full px-3 py-1.5 text-left text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                        onClick={() => handleExampleClick(question)}
+                      >
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* 左侧边栏底部状态指示器 */}
+                <div className="mt-auto pt-4 px-3">
+                  {apiHealthy === true && (
+                    <div className="flex items-center text-xs text-green-500">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                      API服务正常
+                    </div>
+                  )}
+                  {apiHealthy === false && (
+                    <div className="flex items-center text-xs text-red-500">
+                      <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                      API服务异常
+                    </div>
+                  )}
+                  {apiHealthy === null && (
+                    <div className="flex items-center text-xs text-gray-400">
+                      <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+                      正在检查API状态
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -375,7 +501,7 @@ export default function ChatPage() {
                       {message.role === 'assistant' && (
                         <div className="h-8 w-8 rounded-full bg-blue-600 flex-shrink-0 mr-3 flex items-center justify-center overflow-hidden mt-1">
                           <Image 
-                            src="/images/assistant-avatar.svg" 
+                            src="/images/animal_chara_radio_penguin.png" 
                             alt="HR助手" 
                             width={32} 
                             height={32}
@@ -399,7 +525,10 @@ export default function ChatPage() {
                       {message.role === 'user' && (
                         <div className="h-8 w-8 rounded-full bg-gray-300 flex-shrink-0 ml-3 flex items-center justify-center overflow-hidden mt-1">
                           <Image 
-                            src="/images/user-avatar.svg" 
+                            src={getAvatarByAgeAndGender(
+                              getUserMetadata(user || localUser).age,
+                              getUserMetadata(user || localUser).gender
+                            )} 
                             alt="用户" 
                             width={32} 
                             height={32}
@@ -418,7 +547,7 @@ export default function ChatPage() {
                     <div className="flex justify-start">
                       <div className="h-8 w-8 rounded-full bg-blue-600 flex-shrink-0 mr-3 flex items-center justify-center overflow-hidden mt-1">
                         <Image 
-                          src="/images/assistant-avatar.svg" 
+                          src="/images/animal_chara_radio_penguin.png" 
                           alt="HR助手" 
                           width={32} 
                           height={32}

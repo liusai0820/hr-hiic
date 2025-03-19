@@ -26,52 +26,78 @@ export default function AdminUsersPage() {
 
   // 检查是否有管理员权限
   useEffect(() => {
-    if (!user || !isApproved) {
-      router.push('/login');
-    }
-  }, [user, isApproved, router]);
-
-  // 获取用户列表
-  useEffect(() => {
-    const fetchUsers = async () => {
+    const checkAdminAccess = async () => {
       try {
-        setLoading(true);
-        setError(null);
+        if (!user) {
+          console.log('未登录，重定向到登录页面');
+          router.push('/login');
+          return;
+        }
 
-        // 添加时间戳防止缓存
-        const timestamp = new Date().getTime();
-        
-        // 获取所有用户
-        const allUsersResponse = await axios.get(`/api/users?t=${timestamp}`, {
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-          }
-        });
-        setUsers(allUsersResponse.data);
+        // 检查用户元数据中的角色
+        const userRole = user.user_metadata?.role;
+        console.log('当前用户角色:', userRole);
 
-        // 获取待审批用户
-        const pendingUsersResponse = await axios.get(`/api/users/pending?t=${timestamp}`, {
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-          }
-        });
-        setPendingUsers(pendingUsersResponse.data);
-      } catch (err: any) {
-        console.error('获取用户列表失败:', err);
-        setError(err.response?.data?.detail || '获取用户列表失败');
-      } finally {
-        setLoading(false);
+        if (userRole !== 'admin') {
+          console.log('非管理员用户，重定向到首页');
+          router.push('/');
+          return;
+        }
+
+        // 检查是否已完善个人信息
+        const { 姓名, 性别, 年龄, 部门 } = user.user_metadata || {};
+        if (!姓名 || !性别 || !年龄 || !部门) {
+          console.log('管理员未完善个人信息，重定向到设置页面');
+          router.push('/profile/setup');
+          return;
+        }
+
+        // 获取用户列表
+        await fetchUsers();
+      } catch (err) {
+        console.error('检查管理员权限失败:', err);
+        router.push('/');
       }
     };
 
-    if (user && isApproved) {
-      fetchUsers();
+    checkAdminAccess();
+  }, [user, router]);
+
+  // 获取用户列表
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // 添加时间戳防止缓存
+      const timestamp = new Date().getTime();
+      
+      // 获取所有用户
+      const allUsersResponse = await axios.get(`/api/users?t=${timestamp}`, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      });
+      setUsers(allUsersResponse.data);
+
+      // 获取待审批用户
+      const pendingUsersResponse = await axios.get(`/api/users/pending?t=${timestamp}`, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      });
+      setPendingUsers(pendingUsersResponse.data);
+    } catch (err: any) {
+      console.error('获取用户列表失败:', err);
+      setError(err.response?.data?.detail || '获取用户列表失败');
+    } finally {
+      setLoading(false);
     }
-  }, [user, isApproved]);
+  };
 
   // 处理用户审批
   const handleApproval = async (userId: string, approved: boolean) => {

@@ -7,7 +7,10 @@ import {
   Paper, 
   Avatar, 
   CircularProgress,
-  IconButton
+  IconButton,
+  Snackbar,
+  Alert,
+  Chip
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { styled } from '@mui/material/styles';
@@ -71,6 +74,12 @@ const MessageContent = styled(Box)(({ theme }) => ({
   maxWidth: 'calc(100% - 50px)',
 }));
 
+const LoadingIndicator = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  margin: theme.spacing(1, 0),
+}));
+
 // 聊天组件
 const Chat: React.FC = () => {
   // 状态
@@ -82,9 +91,28 @@ const Chat: React.FC = () => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loadingDuration, setLoadingDuration] = useState(0);
+  const [healthCheckStatus, setHealthCheckStatus] = useState<boolean | null>(null);
   
   // 引用
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const loadingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // 初始化时检查API健康状态
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const isHealthy = await chatApi.checkHealth();
+        setHealthCheckStatus(isHealthy);
+      } catch (error) {
+        console.error('健康检查失败:', error);
+        setHealthCheckStatus(false);
+      }
+    };
+    
+    checkHealth();
+  }, []);
   
   // 滚动到底部
   const scrollToBottom = () => {
@@ -95,6 +123,27 @@ const Chat: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+  
+  // 更新加载计时器
+  useEffect(() => {
+    if (isLoading) {
+      loadingTimerRef.current = setInterval(() => {
+        setLoadingDuration(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (loadingTimerRef.current) {
+        clearInterval(loadingTimerRef.current);
+        loadingTimerRef.current = null;
+        setLoadingDuration(0);
+      }
+    }
+    
+    return () => {
+      if (loadingTimerRef.current) {
+        clearInterval(loadingTimerRef.current);
+      }
+    };
+  }, [isLoading]);
   
   // 发送消息
   const sendMessage = async () => {
@@ -109,6 +158,7 @@ const Chat: React.FC = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    setError(null);
     
     try {
       // 使用混合聊天服务
@@ -120,14 +170,27 @@ const Chat: React.FC = () => {
         content: response
       };
       setMessages(prev => [...prev, aiMessage]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('发送消息失败:', error);
-      // 添加错误消息
-      const errorMessage: ChatMessage = {
-        role: 'assistant',
-        content: '抱歉，处理您的请求时出现了问题。请稍后再试。'
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      
+      // 设置错误消息
+      setError(error.message || '发送消息失败');
+      
+      // 如果是API已经处理过的错误，直接显示返回的消息
+      if (typeof error === 'string') {
+        const errorMessage: ChatMessage = {
+          role: 'assistant',
+          content: error
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      } else {
+        // 否则显示通用错误消息
+        const errorMessage: ChatMessage = {
+          role: 'assistant',
+          content: '抱歉，处理您的请求时出现了问题。请稍后再试，或尝试提问其他问题。'
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -141,8 +204,19 @@ const Chat: React.FC = () => {
     }
   };
   
+  // 关闭错误提示
+  const handleCloseError = () => {
+    setError(null);
+  };
+  
   return (
     <ChatContainer>
+      {healthCheckStatus === false && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          系统连接不稳定，可能会影响使用体验。请稍后再试。
+        </Alert>
+      )}
+      
       <MessagesContainer>
         {messages.map((message, index) => (
           <MessageRow key={index} sx={{ justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start' }}>
@@ -163,6 +237,26 @@ const Chat: React.FC = () => {
             )}
           </MessageRow>
         ))}
+        
+        {isLoading && (
+          <LoadingIndicator>
+            <CircularProgress size={20} sx={{ mr: 1 }} />
+            <Typography variant="body2" color="text.secondary">
+              正在思考
+              {loadingDuration > 10 && "（复杂问题可能需要更长时间）"}
+              {loadingDuration > 30 && "（仍在处理中，请耐心等待）"}
+            </Typography>
+            {loadingDuration > 5 && (
+              <Chip 
+                label={`${loadingDuration}秒`} 
+                size="small" 
+                sx={{ ml: 1 }} 
+                variant="outlined"
+              />
+            )}
+          </LoadingIndicator>
+        )}
+        
         <div ref={messagesEndRef} />
       </MessagesContainer>
       
@@ -186,6 +280,12 @@ const Chat: React.FC = () => {
           {isLoading ? <CircularProgress size={24} /> : <SendIcon />}
         </IconButton>
       </InputContainer>
+      
+      <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseError}>
+        <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
     </ChatContainer>
   );
 };

@@ -5,6 +5,7 @@ from app.routers.chat import router as chat_router
 from app.routers.visualizations import router as visualizations_router
 from app.core.config import settings
 from app.core.error_handler import error_handler_middleware
+from app.api import admin
 import uvicorn
 
 # 创建FastAPI应用
@@ -33,6 +34,7 @@ app.add_middleware(
 app.include_router(router, prefix="/api")
 app.include_router(chat_router, prefix="/chat")
 app.include_router(visualizations_router)  # 可视化路由已经包含了/api/visualizations前缀
+app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 
 # 根路径
 @app.get("/")
@@ -46,5 +48,16 @@ async def root():
     }
 
 if __name__ == "__main__":
-    # 运行应用
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=settings.DEBUG) 
+    # 启动应用
+    # 从配置中获取超时设置
+    timeout_seconds = 45  # 固定超时设置为45秒，足够处理大部分查询
+    
+    # 配置uvicorn服务器
+    uvicorn.run(
+        "app.main:app", 
+        host="0.0.0.0", 
+        port=settings.API_PORT,
+        reload=settings.DEBUG,
+        timeout_keep_alive=timeout_seconds,
+        timeout_graceful_shutdown=timeout_seconds
+    ) 

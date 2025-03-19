@@ -19,13 +19,19 @@ class Employee(BaseModel):
     """员工模型"""
     id: str
     name: str
-    gender: Optional[str] = None
-    age: Optional[int] = None
-    department_id: Optional[str] = None
-    position: Optional[str] = None
+    姓名: str
+    性别: Optional[str] = None
+    年龄: Optional[int] = None
+    部门: Optional[str] = None
+    职位: Optional[str] = None
+    学历: Optional[str] = None
+    毕业院校: Optional[str] = None
+    专业: Optional[str] = None
+    入职日期: Optional[str] = None
+    工作年限: Optional[str] = None
+    在职年限: Optional[str] = None
+    出生日期: Optional[str] = None
     salary: Optional[float] = None
-    hire_date: Optional[str] = None
-    education: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
 

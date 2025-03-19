@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PageLayout from '@/components/PageLayout';
+import Image from 'next/image';
+import { getAvatarByAgeAndGender } from '@/utils/avatarUtils';
 
 interface Employee {
   id: string | number;
@@ -405,18 +407,13 @@ export default function EmployeeDetailPage() {
                 <div className="flex flex-col md:flex-row md:items-center gap-6">
                   <div className="flex-shrink-0">
                     <div className={`w-24 h-24 ${getAvatarColor()} rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-md`}>
-                      {employee.性别 === '女' ? 
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="8" r="5" />
-                          <path d="M12 13v8" />
-                          <path d="M9 18h6" />
-                        </svg>
-                        : 
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="8" r="5" />
-                          <path d="M20 21v-4a8 8 0 0 0-16 0v4" />
-                        </svg>
-                      }
+                      <Image 
+                        src={getAvatarByAgeAndGender(employee.年龄, employee.性别)}
+                        alt={`${employee.性别}员工头像`}
+                        width={48}
+                        height={48}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   </div>
                   <div className="flex-grow">

@@ -20,7 +20,7 @@ import CloseIcon from '@mui/icons-material/Close';
 interface Employee {
   id: string;
   name: string;
-  gender: string;
+  性别: string;
   age: number;
   department: string;
   position: string;
@@ -90,7 +90,7 @@ const EmployeeListDialog: React.FC<EmployeeListDialogProps> = ({
                     <TableCell component="th" scope="row">
                       {employee.name}
                     </TableCell>
-                    <TableCell>{employee.gender}</TableCell>
+                    <TableCell>{employee.性别}</TableCell>
                     <TableCell>{employee.age}</TableCell>
                     <TableCell>{employee.department}</TableCell>
                     <TableCell>{employee.position}</TableCell>

@@ -5,6 +5,7 @@ from typing import Dict, List, Any, Optional
 import os
 import json
 import numpy as np
+import re
 
 class SupabaseClient:
     """Supabase客户端封装类"""
@@ -169,9 +170,18 @@ class SupabaseClient:
         try:
             if self.client:
                 print("从Supabase获取员工数据...")
-                response = self.client.table('employees').select('*').execute()
+                response = self.client.table(settings.SUPABASE_TABLE).select('*').execute()
                 if hasattr(response, 'data') and response.data:
                     print(f"成功获取{len(response.data)}条员工记录")
+                    # 确保ID是字符串类型，并添加name字段
+                    for employee in response.data:
+                        if 'id' in employee:
+                            employee['id'] = str(employee['id'])
+                        # 确保name字段存在
+                        if 'name' not in employee and '姓名' in employee:
+                            employee['name'] = employee['姓名']
+                        elif '姓名' not in employee and 'name' in employee:
+                            employee['姓名'] = employee['name']
                     return response.data
                 else:
                     print("从Supabase获取员工数据失败，使用示例数据")
@@ -181,6 +191,15 @@ class SupabaseClient:
             print(f"获取员工数据异常: {str(e)}")
         
         print("使用示例员工数据")
+        # 确保示例数据中的ID是字符串类型，并添加name字段
+        for employee in self.sample_employees:
+            if 'id' in employee:
+                employee['id'] = str(employee['id'])
+            # 确保name字段存在
+            if 'name' not in employee and '姓名' in employee:
+                employee['name'] = employee['姓名']
+            elif '姓名' not in employee and 'name' in employee:
+                employee['姓名'] = employee['name']
         return self.sample_employees
     
     def get_all_education(self) -> List[Dict[str, Any]]:
@@ -220,28 +239,152 @@ class SupabaseClient:
         return []
     
     def get_employee_by_id(self, employee_id: str) -> Optional[Dict[str, Any]]:
-        """根据ID获取员工信息"""
-        if self.client and self.employees_cache:
-            employee = next((e for e in self.employees_cache if e.get('id') == employee_id), None)
-            if employee:
+        """根据ID获取员工信息，并整合教育、工作经验等相关数据"""
+        try:
+            if not self.client:
+                print("Supabase客户端未初始化，使用示例数据")
+                employee = next((e for e in self.sample_employees if str(e.get('id')) == str(employee_id)), None)
+                if employee:
+                    # 确保ID是字符串类型
+                    if 'id' in employee:
+                        employee['id'] = str(employee['id'])
+                    # 确保name字段存在
+                    if 'name' not in employee and '姓名' in employee:
+                        employee['name'] = employee['姓名']
+                    elif '姓名' not in employee and 'name' in employee:
+                        employee['姓名'] = employee['name']
                 return employee
-        
-        # 如果从真实数据库获取失败，使用示例数据
-        return next((e for e in self.sample_employees if e.get('id') == employee_id), None)
+            
+            print(f"从Supabase获取员工ID={employee_id}的详细信息...")
+            
+            # 1. 获取基本员工信息
+            employee_response = self.client.table('employees').select('*').eq('id', employee_id).execute()
+            if not hasattr(employee_response, 'data') or not employee_response.data:
+                print(f"未找到ID为{employee_id}的员工")
+                return None
+            
+            # 获取员工基本信息
+            employee = employee_response.data[0]
+            print(f"成功获取员工基本信息: {employee.get('name', employee.get('姓名', '未知'))}")
+            
+            # 确保ID是字符串类型
+            if 'id' in employee:
+                employee['id'] = str(employee['id'])
+            # 确保name字段存在
+            if 'name' not in employee and '姓名' in employee:
+                employee['name'] = employee['姓名']
+            elif '姓名' not in employee and 'name' in employee:
+                employee['姓名'] = employee['name']
+            
+            # 2. 获取教育信息
+            try:
+                education_response = self.client.table('education').select('*').eq('employee_id', employee_id).execute()
+                if hasattr(education_response, 'data') and education_response.data:
+                    education = education_response.data[0]  # 假设每个员工只有一条教育记录
+                    print(f"成功获取员工教育信息")
+                    
+                    # 将教育信息合并到员工信息中
+                    for key, value in education.items():
+                        if key != 'id' and key != 'employee_id' and value is not None:
+                            employee[key] = value
+            except Exception as e:
+                print(f"获取员工教育信息失败: {str(e)}")
+            
+            # 3. 获取工作经验信息
+            try:
+                work_exp_response = self.client.table('work_experience').select('*').eq('employee_id', employee_id).execute()
+                if hasattr(work_exp_response, 'data') and work_exp_response.data:
+                    work_exp = work_exp_response.data[0]  # 假设每个员工只有一条工作经验记录
+                    print(f"成功获取员工工作经验信息")
+                    
+                    # 将工作经验信息合并到员工信息中
+                    for key, value in work_exp.items():
+                        if key != 'id' and key != 'employee_id' and value is not None:
+                            employee[key] = value
+            except Exception as e:
+                print(f"获取员工工作经验信息失败: {str(e)}")
+            
+            # 4. 获取工作变动信息
+            try:
+                job_changes_response = self.client.table('job_changes').select('*').eq('employee_id', employee_id).execute()
+                if hasattr(job_changes_response, 'data') and job_changes_response.data:
+                    job_changes = job_changes_response.data
+                    print(f"成功获取员工工作变动信息: {len(job_changes)}条记录")
+                    employee['job_change'] = job_changes
+            except Exception as e:
+                print(f"获取员工工作变动信息失败: {str(e)}")
+            
+            # 5. 获取晋升信息
+            try:
+                promotions_response = self.client.table('promotions').select('*').eq('employee_id', employee_id).execute()
+                if hasattr(promotions_response, 'data') and promotions_response.data:
+                    promotions = promotions_response.data
+                    print(f"成功获取员工晋升信息: {len(promotions)}条记录")
+                    employee['promotion'] = promotions
+            except Exception as e:
+                print(f"获取员工晋升信息失败: {str(e)}")
+            
+            # 6. 获取奖项信息
+            try:
+                awards_response = self.client.table('awards').select('*').eq('employee_id', employee_id).execute()
+                if hasattr(awards_response, 'data') and awards_response.data:
+                    awards = awards_response.data
+                    print(f"成功获取员工奖项信息: {len(awards)}条记录")
+                    employee['awards'] = awards
+            except Exception as e:
+                print(f"获取员工奖项信息失败: {str(e)}")
+            
+            print(f"成功整合员工ID={employee_id}的所有信息")
+            return employee
+            
+        except Exception as e:
+            print(f"获取员工详细信息时出错: {str(e)}")
+            # 如果从真实数据库获取失败，使用示例数据
+            return next((e for e in self.sample_employees if e.get('id') == employee_id), None)
     
     def get_employees_by_department(self, department: str) -> List[Dict[str, Any]]:
         """根据部门获取员工数据"""
-        if self.client and self.employees_cache:
-            # 获取部门ID
-            dept_id = self._get_department_id_by_name(department)
-            # 返回该部门的所有员工
-            return [e for e in self.employees_cache if e.get('department_id') == dept_id]
-        
-        # 如果从真实数据库获取失败，使用示例数据
-        dept_id = next((d.get('id') for d in self.sample_departments if d.get('name') == department), None)
-        if dept_id:
-            return [e for e in self.sample_employees if e.get('department_id') == dept_id]
-        return []
+        try:
+            if self.client:
+                print(f"从Supabase获取部门'{department}'的员工数据...")
+                response = self.client.table('employees').select('*').eq('department', department).execute()
+                if hasattr(response, 'data') and response.data:
+                    employees = response.data
+                    print(f"成功获取部门'{department}'的员工数据: {len(employees)}条记录")
+                    
+                    # 确保ID是字符串类型，并添加name字段
+                    for employee in employees:
+                        if 'id' in employee:
+                            employee['id'] = str(employee['id'])
+                        # 确保name字段存在
+                        if 'name' not in employee and '姓名' in employee:
+                            employee['name'] = employee['姓名']
+                        elif '姓名' not in employee and 'name' in employee:
+                            employee['姓名'] = employee['name']
+                    
+                    return employees
+                else:
+                    print(f"未找到部门'{department}'的员工数据")
+                    return []
+            else:
+                print("Supabase客户端未初始化，使用示例数据")
+                # 从示例数据中筛选
+                employees = [e for e in self.sample_employees if e.get('department') == department]
+                
+                # 确保ID是字符串类型，并添加name字段
+                for employee in employees:
+                    if 'id' in employee:
+                        employee['id'] = str(employee['id'])
+                    # 确保name字段存在
+                    if 'name' not in employee and '姓名' in employee:
+                        employee['name'] = employee['姓名']
+                    elif '姓名' not in employee and 'name' in employee:
+                        employee['姓名'] = employee['name']
+                
+                return employees
+        except Exception as e:
+            print(f"获取部门员工数据时出错: {str(e)}")
+            return []
     
     def get_employees_as_dataframe(self) -> pd.DataFrame:
         """获取所有员工数据并转换为DataFrame"""
@@ -308,18 +451,95 @@ class SupabaseClient:
     
     def get_department_stats(self) -> Dict[str, Any]:
         """获取部门统计信息"""
-        # 计算每个部门的员工数量
-        dept_counts = {}
-        for dept in self.sample_departments:
-            dept_id = dept.get('id')
-            dept_name = dept.get('name')
-            count = len([e for e in self.sample_employees if e.get('department_id') == dept_id])
-            dept_counts[dept_name] = count
-        
-        # 添加总员工数
-        dept_counts['total_employees'] = len(self.sample_employees)
-        
-        return dept_counts
+        try:
+            # 直接从数据库获取部门数据
+            if self.client:
+                print("从Supabase直接获取部门统计数据...")
+                try:
+                    # 尝试从部门表获取数据
+                    response = self.client.table('departments').select('name,id').execute()
+                    
+                    if hasattr(response, 'data') and response.data:
+                        departments = response.data
+                        print(f"成功获取{len(departments)}个部门")
+                        
+                        # 获取每个部门的员工数量
+                        dept_counts = {}
+                        for dept in departments:
+                            dept_name = dept.get('name')
+                            if dept_name:
+                                # 查询该部门的员工数量
+                                try:
+                                    emp_response = self.client.table('employees').select('id').eq('department', dept_name).execute()
+                                    if hasattr(emp_response, 'data'):
+                                        count = len(emp_response.data)
+                                        dept_counts[dept_name] = count
+                                        print(f"部门 '{dept_name}' 有 {count} 名员工")
+                                except Exception as e:
+                                    print(f"获取部门 '{dept_name}' 员工数量失败: {str(e)}")
+                                    dept_counts[dept_name] = 0
+                        
+                        # 如果没有获取到部门数据，尝试从员工表中提取部门信息
+                        if not dept_counts:
+                            print("从部门表获取数据失败，尝试从员工表提取部门信息...")
+                            emp_response = self.client.table('employees').select('department').execute()
+                            if hasattr(emp_response, 'data') and emp_response.data:
+                                # 统计每个部门的员工数量
+                                for emp in emp_response.data:
+                                    dept_name = emp.get('department')
+                                    if dept_name:
+                                        dept_counts[dept_name] = dept_counts.get(dept_name, 0) + 1
+                                
+                                print(f"从员工表提取了 {len(dept_counts)} 个部门")
+                        
+                        # 获取总员工数
+                        try:
+                            emp_count_response = self.client.table('employees').select('id').execute()
+                            total_employees = len(emp_count_response.data) if hasattr(emp_count_response, 'data') else 0
+                        except Exception as e:
+                            print(f"获取总员工数失败: {str(e)}")
+                            # 使用部门员工数之和作为总员工数
+                            total_employees = sum(dept_counts.values())
+                        
+                        # 添加总员工数
+                        dept_counts['total_employees'] = total_employees
+                        
+                        return dept_counts
+                except Exception as e:
+                    print(f"从Supabase获取部门数据失败: {str(e)}")
+            
+            # 如果从数据库获取失败，尝试从员工数据中提取部门信息
+            print("尝试从员工数据中提取部门信息...")
+            employees = self.get_all_employees()
+            
+            # 计算每个部门的员工数量
+            dept_counts = {}
+            for emp in employees:
+                dept_name = emp.get('部门') or emp.get('department')
+                if dept_name:
+                    dept_counts[dept_name] = dept_counts.get(dept_name, 0) + 1
+            
+            # 如果仍然没有获取到部门数据，使用示例数据
+            if not dept_counts:
+                print("未获取到实际部门数据，使用示例数据")
+                for dept in self.sample_departments:
+                    dept_name = dept.get('name')
+                    count = len([e for e in self.sample_employees if e.get('department_id') == dept.get('id')])
+                    dept_counts[dept_name] = count
+            
+            # 添加总员工数
+            dept_counts['total_employees'] = len(employees) if employees else len(self.sample_employees)
+            
+            return dept_counts
+        except Exception as e:
+            print(f"获取部门统计信息失败: {str(e)}")
+            # 出错时返回示例数据
+            dept_counts = {}
+            for dept in self.sample_departments:
+                dept_name = dept.get('name')
+                dept_counts[dept_name] = 0
+            dept_counts['total_employees'] = 0
+            return dept_counts
     
     def get_gender_stats(self) -> Dict[str, int]:
         """获取性别统计信息"""
@@ -473,10 +693,141 @@ class SupabaseClient:
                 modified_query = self._modify_sql_for_hr_data(sql_query)
                 print(f"修改后的SQL查询: {modified_query[:100]}...")
                 
-                # 尝试直接在hr_data表上执行查询
+                # 处理特定年份入职查询
+                if 'SUBSTR(hire_date, 1, 4)' in modified_query:
+                    print("检测到特定年份入职查询，执行专门的处理逻辑")
+                    
+                    # 获取查询中的年份
+                    year_match = re.search(r"SUBSTR\(hire_date, 1, 4\) = '(\d{4})'", modified_query)
+                    if not year_match:
+                        print("未能从查询中提取年份")
+                        return [{'error': '查询语法错误', 'message': '无法从查询中提取年份信息'}]
+                        
+                    year = year_match.group(1)
+                    print(f"查询{year}年入职的员工")
+                    
+                    # 尝试多种方式获取入职年份的员工
+                    year_employees = []
+                    
+                    # 方法1: 从employees表中查询
+                    try:
+                        print("方法1: 从employees表获取所有员工数据并在应用层过滤...")
+                        response = self.client.table('employees').select('*').execute()
+                        
+                        if hasattr(response, 'data') and response.data:
+                            for employee in response.data:
+                                # 检查多个可能的入职日期字段
+                                for date_field in ['hire_date', 'first_work_date', 'join_date']:
+                                    date_value = employee.get(date_field, '')
+                                    if date_value and isinstance(date_value, str) and len(date_value) >= 4:
+                                        date_year = date_value[:4]
+                                        if date_year == year:
+                                            # 只保留查询需要的字段
+                                            filtered_employee = {'name': employee.get('name', '')}
+                                            if filtered_employee not in year_employees:
+                                                year_employees.append(filtered_employee)
+                                            break
+                            
+                            print(f"方法1找到{len(year_employees)}名{year}年入职的员工")
+                    except Exception as e:
+                        print(f"方法1失败: {str(e)}")
+                    
+                    # 方法2: 如果方法1没有找到员工，尝试从work_experience表查询
+                    if not year_employees:
+                        try:
+                            print("方法2: 从work_experience表查询...")
+                            query = self.client.table('work_experience').select('employee_id,hire_date').execute()
+                            
+                            if hasattr(query, 'data') and query.data:
+                                emp_ids = []
+                                for record in query.data:
+                                    hire_date = record.get('hire_date', '')
+                                    if hire_date and isinstance(hire_date, str) and len(hire_date) >= 4:
+                                        hire_year = hire_date[:4]
+                                        if hire_year == year:
+                                            emp_ids.append(record.get('employee_id'))
+                                
+                                # 获取这些员工的姓名
+                                if emp_ids:
+                                    for emp_id in emp_ids:
+                                        name_query = self.client.table('employees').select('name').eq('id', emp_id).execute()
+                                        if hasattr(name_query, 'data') and name_query.data:
+                                            year_employees.append({'name': name_query.data[0].get('name', '')})
+                                
+                                print(f"方法2找到{len(year_employees)}名{year}年入职的员工")
+                        except Exception as e:
+                            print(f"方法2失败: {str(e)}")
+                    
+                    # 方法3: 如果前两种方法都没找到，尝试从缓存数据中查询
+                    if not year_employees:
+                        try:
+                            print("方法3: 从内存缓存中查询...")
+                            all_employees = self.get_all_employees()
+                            
+                            for employee in all_employees:
+                                for date_field in ['hire_date', 'first_work_date', 'join_date', 'created_at']:
+                                    date_value = employee.get(date_field, '')
+                                    if date_value and isinstance(date_value, str) and len(date_value) >= 4:
+                                        year_value = date_value[:4]
+                                        if year_value == year:
+                                            year_employees.append({'name': employee.get('name', '')})
+                                            break
+                            
+                            print(f"方法3找到{len(year_employees)}名{year}年入职的员工")
+                        except Exception as e:
+                            print(f"方法3失败: {str(e)}")
+                    
+                    # 如果指定了ORDER BY，进行排序
+                    if 'ORDER BY name' in modified_query:
+                        year_employees.sort(key=lambda x: x.get('name', ''))
+                    
+                    # 如果三种方法都没找到员工
+                    if not year_employees:
+                        print(f"警告: 未能找到{year}年入职的员工")
+                        return [{'message': f'未能找到{year}年入职的员工记录'}]
+                    
+                    return year_employees
+                
+                # 处理特定类型的查询 - 按部门分组计数
+                if ('COUNT' in modified_query.upper() and 
+                    'GROUP BY' in modified_query.upper() and 
+                    ('DEPARTMENT' in modified_query.upper() or 'department' in modified_query.lower())):
+                    print("检测到按部门分组的统计查询，执行专门的处理逻辑")
+                    try:
+                        # 直接从Supabase获取所有部门数据
+                        print("从Supabase直接获取部门统计数据...")
+                        response = self.client.table('employees').select('department').execute()
+                        
+                        if hasattr(response, 'data') and response.data:
+                            # 按部门对员工进行分组计数
+                            dept_counts = {}
+                            for record in response.data:
+                                dept = record.get('department', '未知部门')
+                                if dept and dept.strip():  # 确保部门名不为空
+                                    dept_counts[dept] = dept_counts.get(dept, 0) + 1
+                            
+                            print(f"成功获取{len(dept_counts)}个部门")
+                            
+                            # 转换为结果列表
+                            result = []
+                            for dept, count in dept_counts.items():
+                                print(f"部门 '{dept}' 有 {count} 名员工")
+                                result.append({'department': dept, 'count': count})
+                            
+                            # 排序（按数量降序排序）
+                            if 'ORDER BY' in modified_query.upper() and 'DESC' in modified_query.upper():
+                                result.sort(key=lambda x: x['count'], reverse=True)
+                            elif 'ORDER BY' in modified_query.upper():
+                                result.sort(key=lambda x: x['count'])
+                            
+                            return result
+                    except Exception as e:
+                        print(f"获取部门统计数据失败: {str(e)}")
+                
+                # 尝试直接在employees表上执行查询
                 try:
-                    # 直接使用select方法查询hr_data表
-                    if 'SELECT' in modified_query.upper() and 'FROM HR_DATA' in modified_query.upper():
+                    # 直接使用select方法查询employees表
+                    if 'SELECT' in modified_query.upper() and 'FROM EMPLOYEES' in modified_query.upper():
                         # 提取查询条件
                         where_clause = ""
                         if 'WHERE' in modified_query.upper():
@@ -486,14 +837,14 @@ class SupabaseClient:
                             if 'LIMIT' in where_clause:
                                 where_clause = where_clause.split('LIMIT')[0].strip()
                         
-                        print("简化查询逻辑，直接获取所有男性员工并按部门分组")
+                        print("简化查询逻辑，直接获取所有员工并按条件筛选")
                         
                         # 如果是查询男性员工数量，直接获取所有男性员工
                         if 'GENDER' in modified_query.upper() and '男' in modified_query:
                             try:
                                 # 获取所有男性员工
                                 print("获取所有男性员工...")
-                                response = self.client.table('hr_data').select('*').eq('gender', '男').execute()
+                                response = self.client.table('employees').select('*').eq('gender', '男').execute()
                                 
                                 if hasattr(response, 'data'):
                                     male_employees = response.data
@@ -536,7 +887,7 @@ class SupabaseClient:
                         
                         # 其他类型的查询，尝试直接执行
                         try:
-                            query = self.client.table('hr_data').select('*')
+                            query = self.client.table('employees').select('*')
                             response = query.execute()
                             
                             if hasattr(response, 'data'):
@@ -545,7 +896,7 @@ class SupabaseClient:
                         except Exception as e:
                             print(f"执行查询失败: {str(e)}")
                 except Exception as e:
-                    print(f"直接查询hr_data表失败: {str(e)}")
+                    print(f"直接查询employees表失败: {str(e)}")
             except Exception as e:
                 print(f"在Supabase上执行SQL查询失败: {str(e)}")
                 print("将使用本地数据执行查询")
@@ -606,24 +957,21 @@ class SupabaseClient:
             return [{'error': str(e), 'message': '查询执行失败，无法提供准确数据。请检查数据库连接或查询语法。'}]
     
     def _modify_sql_for_hr_data(self, sql_query: str) -> str:
-        """修改SQL查询，将employees替换为hr_data"""
-        # 替换表名
-        modified_query = sql_query.replace('employees', 'hr_data').replace('EMPLOYEES', 'HR_DATA')
+        """修改SQL查询，适配当前的表结构"""
+        # 不再替换表名，因为现在直接使用employees表
+        modified_query = sql_query
         
         # 替换列名（根据需要添加更多映射）
         column_mappings = {
-            'e.gender': 'hr_data.gender',
-            'gender': 'gender',
-            'e.department_id': 'hr_data.department',
-            'department_id': 'department',
-            'd.name': 'hr_data.department',
-            'department_name': 'department'
+            'e.gender': 'employees.gender',
+            'e.department_id': 'employees.department_id',
+            'd.name': 'departments.name'
         }
         
         for old_col, new_col in column_mappings.items():
             modified_query = modified_query.replace(old_col, new_col)
         
-        print(f"完整修改后的SQL查询: {modified_query}")
+        print(f"修改后的SQL查询: {modified_query}")
         return modified_query
 
     def _sql_to_pandas(self, sql_query: str) -> str:
@@ -722,6 +1070,148 @@ result
         
         # 如果无法解析，返回原始SQL作为错误信息
         raise ValueError(f"无法解析SQL查询: {sql_query}")
+
+    def get_employee_details_by_id(self, employee_id: str) -> Optional[Dict[str, Any]]:
+        """使用employee_details视图获取员工详情"""
+        try:
+            if not self.client:
+                print("Supabase客户端未初始化，使用示例数据")
+                return self.get_employee_by_id(employee_id)
+            
+            print(f"从employee_details视图获取员工ID={employee_id}的详细信息...")
+            
+            # 从视图中获取基本信息
+            response = self.client.table('employee_details').select('*').eq('id', employee_id).execute()
+            if not hasattr(response, 'data') or not response.data:
+                print(f"在视图中未找到ID为{employee_id}的员工")
+                # 尝试使用原始方法获取
+                return self.get_employee_by_id(employee_id)
+            
+            # 获取员工基本信息
+            employee = response.data[0]
+            print(f"成功从视图获取员工基本信息: {employee.get('name')}")
+            
+            # 确保id是字符串
+            if 'id' in employee:
+                employee['id'] = str(employee['id'])
+            
+            # 确保name和姓名字段都存在
+            if 'name' in employee and '姓名' not in employee:
+                employee['姓名'] = employee['name']
+            elif '姓名' in employee and 'name' not in employee:
+                employee['name'] = employee['姓名']
+            
+            # 获取工作变动、晋升和奖项信息
+            # 这些信息仍然需要单独查询，因为它们是一对多关系
+            
+            # 1. 获取工作变动信息
+            try:
+                job_changes_response = self.client.table('job_changes').select('*').eq('employee_id', employee_id).execute()
+                if hasattr(job_changes_response, 'data') and job_changes_response.data:
+                    job_changes = job_changes_response.data
+                    print(f"成功获取员工工作变动信息: {len(job_changes)}条记录")
+                    employee['job_change'] = job_changes
+            except Exception as e:
+                print(f"获取员工工作变动信息失败: {str(e)}")
+            
+            # 2. 获取晋升信息
+            try:
+                promotions_response = self.client.table('promotions').select('*').eq('employee_id', employee_id).execute()
+                if hasattr(promotions_response, 'data') and promotions_response.data:
+                    promotions = promotions_response.data
+                    print(f"成功获取员工晋升信息: {len(promotions)}条记录")
+                    employee['promotion'] = promotions
+            except Exception as e:
+                print(f"获取员工晋升信息失败: {str(e)}")
+            
+            # 3. 获取奖项信息
+            try:
+                awards_response = self.client.table('awards').select('*').eq('employee_id', employee_id).execute()
+                if hasattr(awards_response, 'data') and awards_response.data:
+                    awards = awards_response.data
+                    print(f"成功获取员工奖项信息: {len(awards)}条记录")
+                    employee['awards'] = awards
+            except Exception as e:
+                print(f"获取员工奖项信息失败: {str(e)}")
+            
+            print(f"成功整合员工ID={employee_id}的所有信息")
+            return employee
+            
+        except Exception as e:
+            print(f"从视图获取员工详细信息时出错: {str(e)}")
+            # 如果从视图获取失败，尝试使用原始方法
+            return self.get_employee_by_id(employee_id)
+
+    def get_employee_details_full_by_id(self, employee_id: str) -> Optional[Dict[str, Any]]:
+        """使用employee_details_full视图获取员工完整详情"""
+        try:
+            if not self.client:
+                print("Supabase客户端未初始化，使用示例数据")
+                return self.get_employee_by_id(employee_id)
+            
+            print(f"从employee_details_full视图获取员工ID={employee_id}的完整详情...")
+            
+            # 从视图中获取基本信息
+            response = self.client.table('employee_details_full').select('*').eq('id', employee_id).execute()
+            if not hasattr(response, 'data') or not response.data:
+                print(f"在视图中未找到ID为{employee_id}的员工")
+                # 尝试使用原始方法获取
+                return self.get_employee_details_by_id(employee_id)
+            
+            # 获取员工基本信息
+            employee = response.data[0]
+            print(f"成功从视图获取员工完整详情: {employee.get('name')}")
+            
+            # 确保id是字符串
+            if 'id' in employee:
+                employee['id'] = str(employee['id'])
+            
+            # 确保name和姓名字段都存在
+            if 'name' in employee and '姓名' not in employee:
+                employee['姓名'] = employee['name']
+            elif '姓名' in employee and 'name' not in employee:
+                employee['name'] = employee['姓名']
+            
+            # 获取工作变动、晋升和奖项信息
+            # 这些信息仍然需要单独查询，因为它们是一对多关系
+            
+            # 1. 获取工作变动信息
+            try:
+                job_changes_response = self.client.table('job_changes').select('*').eq('employee_id', employee_id).execute()
+                if hasattr(job_changes_response, 'data') and job_changes_response.data:
+                    job_changes = job_changes_response.data
+                    print(f"成功获取员工工作变动信息: {len(job_changes)}条记录")
+                    employee['job_change'] = job_changes
+            except Exception as e:
+                print(f"获取员工工作变动信息失败: {str(e)}")
+            
+            # 2. 获取晋升信息
+            try:
+                promotions_response = self.client.table('promotions').select('*').eq('employee_id', employee_id).execute()
+                if hasattr(promotions_response, 'data') and promotions_response.data:
+                    promotions = promotions_response.data
+                    print(f"成功获取员工晋升信息: {len(promotions)}条记录")
+                    employee['promotion'] = promotions
+            except Exception as e:
+                print(f"获取员工晋升信息失败: {str(e)}")
+            
+            # 3. 获取奖项信息
+            try:
+                awards_response = self.client.table('awards').select('*').eq('employee_id', employee_id).execute()
+                if hasattr(awards_response, 'data') and awards_response.data:
+                    awards = awards_response.data
+                    print(f"成功获取员工奖项信息: {len(awards)}条记录")
+                    employee['awards'] = awards
+            except Exception as e:
+                print(f"获取员工奖项信息失败: {str(e)}")
+            
+            print(f"成功整合员工ID={employee_id}的所有信息")
+            return employee
+            
+        except Exception as e:
+            print(f"从视图获取员工完整详情时出错: {str(e)}")
+            # 如果从视图获取失败，尝试使用原始方法
+            return self.get_employee_details_by_id(employee_id)
 
 # 创建全局Supabase客户端实例
 supabase_client = SupabaseClient() 

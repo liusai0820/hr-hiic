@@ -23,11 +23,12 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { pink, blue, purple, teal, amber } from '@mui/material/colors';
 import Confetti from 'react-confetti';
 import useWindowSize from 'react-use/lib/useWindowSize';
+import { getAvatarByAgeAndGender } from '@/utils/avatarUtils';
 
 interface Employee {
   id: string;
   name: string;
-  gender: string;
+  性别: string;
   age: number;
   department: string;
   position?: string;
@@ -257,7 +258,7 @@ const BirthdayEmployeeDialog: React.FC<BirthdayEmployeeDialogProps> = ({
                         sx={{ 
                           width: 50, 
                           height: 50, 
-                          bgcolor: getAvatarColor(employee.gender),
+                          bgcolor: getAvatarColor(employee.性别),
                           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                           border: '2px solid white',
                           animation: isSelected ? 'pulse 1.5s infinite' : 'none',
@@ -274,19 +275,11 @@ const BirthdayEmployeeDialog: React.FC<BirthdayEmployeeDialogProps> = ({
                           }
                         }}
                       >
-                        {/* 根据性别显示不同的头像图标 */}
-                        {employee.gender === '女' ? (
-                          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="8" r="5" />
-                            <path d="M12 13v8" />
-                            <path d="M9 18h6" />
-                          </svg>
-                        ) : (
-                          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="8" r="5" />
-                            <path d="M20 21v-4a8 8 0 0 0-16 0v4" />
-                          </svg>
-                        )}
+                        <img 
+                          src={getAvatarByAgeAndGender(Number(age) || 30, employee.性别)} 
+                          alt={`${employee.性别}员工头像`}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
                       </Avatar>
                       <Box sx={{ ml: 1.5 }}>
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: pink[700], lineHeight: 1.2 }}>
@@ -294,7 +287,7 @@ const BirthdayEmployeeDialog: React.FC<BirthdayEmployeeDialogProps> = ({
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.3 }}>
                           <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-                            {employee.gender} · {age}岁
+                            {employee.性别} · {age}岁
                           </Typography>
                         </Box>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
@@ -314,8 +307,8 @@ const BirthdayEmployeeDialog: React.FC<BirthdayEmployeeDialogProps> = ({
                               size="small" 
                               label={employee.position} 
                               sx={{ 
-                                bgcolor: employee.gender === '女' ? 'rgba(255,182,193,0.2)' : 'rgba(173,216,230,0.2)',
-                                color: employee.gender === '女' ? pink[700] : blue[700],
+                                bgcolor: employee.性别 === '女' ? 'rgba(255,182,193,0.2)' : 'rgba(173,216,230,0.2)',
+                                color: employee.性别 === '女' ? pink[700] : blue[700],
                                 fontSize: '0.7rem',
                                 height: 20
                               }} 

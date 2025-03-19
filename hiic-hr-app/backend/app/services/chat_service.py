@@ -3,6 +3,7 @@ from langchain.memory import ConversationBufferMemory
 from app.core.config import settings
 from app.db.supabase import supabase_client
 from app.services.openrouter_service import openrouter_service
+from app.models.hr_models import ChatMessage
 import pandas as pd
 import json
 from typing import List, Dict, Any
@@ -41,7 +42,7 @@ class HRChatService:
         education_stats = supabase_client.get_education_stats()
         
         # 构建系统提示
-        system_prompt = f"""你是HIIC公司内部HR系统的AI助手，名叫"小智"。你的性格友好、专业且有亲和力。你的回答必须基于我提供的员工数据库信息。
+        system_prompt = f"""你是HIIC公司内部HR系统的AI助手，名叫"Cool"。你的性格友好、专业且有亲和力。你的回答必须基于我提供的员工数据库信息。
 
 公司员工数据概况:
 - 总员工数: {len(self.hr_data) if not self.hr_data.empty else '未知'}
@@ -72,7 +73,7 @@ class HRChatService:
 """
         return system_prompt
     
-    async def get_response(self, messages: List[Dict[str, str]]) -> str:
+    async def get_response(self, messages: List[ChatMessage]) -> str:
         """获取AI回复"""
         # 提取用户最新的问题
         user_message = messages[-1].content if messages[-1].role == "user" else ""
@@ -116,7 +117,7 @@ class HRChatService:
         try:
             # 调用OpenRouter API
             print(f"发送消息到OpenRouter: {user_message}")
-            response = openrouter_service.get_chat_response(full_messages)
+            response = await openrouter_service.get_chat_response(full_messages)
             print(f"收到OpenRouter回复: {response[:100]}...")
             return response
         except Exception as e:

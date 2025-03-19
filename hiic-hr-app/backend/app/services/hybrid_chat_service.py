@@ -8,6 +8,11 @@ from app.services.openrouter_service import openrouter_service
 from app.services.question_classifier import question_classifier
 from app.db.supabase import supabase_client
 from app.models.hr_models import ChatMessage
+import logging
+from app.core.config import settings
+
+# 配置日志
+logger = logging.getLogger(__name__)
 
 class HybridChatService:
     """混合聊天服务，整合工具调用和SQL查询功能"""
@@ -25,38 +30,19 @@ class HybridChatService:
     
     def _create_system_prompt(self) -> str:
         """创建系统提示"""
-        # 获取基本统计信息
-        dept_stats = supabase_client.get_department_stats()
-        gender_stats = supabase_client.get_gender_stats()
-        age_stats = supabase_client.get_age_stats()
-        education_stats = supabase_client.get_education_stats()
-        
-        # 构建系统提示
-        system_prompt = f"""你是HIIC公司内部HR系统的AI助手，名叫"小智"。你的性格友好、专业且有亲和力。你的回答必须基于我提供的员工数据库信息。
+        system_prompt = """你是HIIC公司内部HR系统的AI助手，名叫"Cool"。你的性格友好、专业且有亲和力。你现在具有直接查询HR数据库的能力。
 
-公司员工数据概况:
-- 总员工数: {dept_stats.get('total_employees', '未知') if dept_stats else '未知'}
-- 部门数量: {len(dept_stats) if dept_stats else '未知'}
-- 性别分布: {json.dumps(gender_stats, ensure_ascii=False) if gender_stats else '未知'}
-- 平均年龄: {age_stats.get('mean', '未知') if age_stats else '未知'}
-
-你现在拥有强大的数据分析能力，可以回答复杂的HR相关问题。你可以：
-1. 分析部门结构和人员配置
-2. 计算和比较各种HR指标
-3. 进行员工数据的统计分析
-4. 回答需要推理和计算的复杂问题
-
-重要指示:
-1. 你的回答必须严格基于数据，绝对不要编造不在数据中的信息
-2. 以自然、对话化的方式回答问题，避免直接罗列数据，而是将数据融入到对话中
+当回答HR相关问题时，请遵循以下原则：
+1. 基于提供的SQL查询结果提供准确信息，不要编造不在结果中的数据
+2. 以自然、对话化的方式表达查询结果，避免直接罗列数据
 3. 使用亲切友好的语气，像同事之间的对话一样自然
 4. 所有回答必须使用中文，语气要活泼但专业
-5. 如果需要进行复杂分析，你可以调用相应的工具函数或使用SQL查询
-6. 当用户询问员工信息时，不要生硬地罗列数据，而是以自然的语言描述
-7. 特别注意：不要编造员工的学历、毕业院校或其他背景信息，只描述确切数据
-8. 如果数据中某个字段是空的或未知的，直接说明该信息未知，不要猜测或编造
+5. 当查询结果为空时，礼貌地告知用户没有找到相关信息
+6. 根据SQL查询的上下文解释数据含义
 
-请记住，你是在与人对话，而不是简单地展示数据。但更重要的是，你必须保证信息的准确性，宁可少说也不要编造。
+例如，如果SQL查询返回了某个部门有15名员工，不要只回复"15人"，而是回复"研发部目前有15名员工，是我们公司的主要技术力量。"之类更加对话化的表达。
+
+记住，你的职责是使复杂的数据库查询结果变得易于理解和亲切。
 """
         return system_prompt
     
@@ -163,49 +149,164 @@ tool: analyze_age_distribution
         cache_key = self._generate_cache_key(question)
         return self.response_cache.get(cache_key)
     
-    async def get_response(self, messages: List[Union[ChatMessage, Dict[str, str]]]) -> str:
-        """获取AI回复"""
-        # 提取用户最新的问题，兼容ChatMessage对象和字典
-        user_message = ""
-        if messages and len(messages) > 0:
-            last_message = messages[-1]
-            if isinstance(last_message, dict):
-                user_message = last_message.get("content", "") if last_message.get("role") == "user" else ""
-            else:  # 假设是ChatMessage对象
-                user_message = last_message.content if last_message.role == "user" else ""
+    async def get_response(self, messages: List[ChatMessage]) -> str:
+        """获取回复
         
-        if not user_message:
-            return "您好！有什么我可以帮您了解的吗？无论是查询员工信息还是部门情况，我都很乐意为您服务。"
-        
-        # 1. 检查缓存
-        cached_response = self._check_cache(user_message)
-        if cached_response:
-            print(f"混合聊天服务：使用缓存响应")
-            return cached_response
-        
-        # 2. 分类问题，决定使用哪种方法
-        approach = await question_classifier.classify(user_message)
-        print(f"混合聊天服务：问题分类结果 - {approach}")
-        
-        # 3. 根据分类结果选择处理方法
-        if approach.startswith("tool:"):
-            # 使用工具方法
-            tool_name = approach[5:]
-            print(f"混合聊天服务：使用工具 {tool_name}")
+        Args:
+            messages: 消息列表
             
-            # 提取参数
-            params = question_classifier.extract_parameters(user_message, tool_name)
-            print(f"混合聊天服务：提取参数 - {params}")
-            
-            # 使用工具方法处理
-            response = await self._process_with_tool(messages, tool_name, params)
-        else:
-            # 使用SQL方法
-            print(f"混合聊天服务：使用SQL方法")
-            response = await self._process_with_sql(user_message)
+        Returns:
+            回复内容
+        """
+        if not messages:
+            return "请输入您的问题"
         
-        # 4. 添加到缓存
-        self._add_to_cache(user_message, response)
+        # 获取最后一条用户消息
+        user_message = messages[-1].content
+        
+        # 使用快速分类器进行分类
+        try:
+            question_type = await question_classifier.classify(user_message)
+            logger.info(f"问题 '{user_message[:20]}...' 被分类为: {question_type}")
+        except Exception as e:
+            logger.error(f"问题分类失败: {str(e)}")
+            question_type = "HYBRID_QUERY"  # 默认为混合查询
+        
+        # 根据问题类型选择处理方式
+        try:
+            if question_type == "SQL_QUERY":
+                logger.info(f"尝试使用SQL服务处理问题: {user_message[:30]}...")
+                # 使用SQL服务处理
+                try:
+                    # 设置更长的超时时间
+                    timeout_seconds = settings.MODEL_TIMEOUT
+                    logger.info(f"SQL查询超时设置为{timeout_seconds}秒")
+                    
+                    # 使用超时机制执行SQL查询
+                    try:
+                        # 创建一个任务
+                        sql_task = asyncio.create_task(sql_service.get_sql_response(user_message))
+                        # 等待任务完成，带超时
+                        sql_response = await asyncio.wait_for(sql_task, timeout=timeout_seconds)
+                        
+                        # 清理响应中的所有Markdown格式和代码块
+                        # 使用sql_service中相同的清理函数，保持一致性
+                        sql_response = sql_service._clean_response(sql_response)
+                        
+                        return sql_response
+                    except asyncio.TimeoutError:
+                        logger.error(f"SQL查询超时，超过{timeout_seconds}秒")
+                        # 尝试获取已查询到的结果（如果有）
+                        if hasattr(sql_task, 'result') and sql_task.result() is not None:
+                            logger.info("尽管超时，但SQL任务已完成，获取其结果")
+                            sql_response = sql_task.result()
+                            sql_response = sql_service._clean_response(sql_response)
+                            return sql_response
+                        else:
+                            # 如果真的没有结果，回退到OpenRouter
+                            logger.info("SQL查询真的超时了，回退到OpenRouter")
+                            return await self._send_to_openrouter(messages)
+                except Exception as e:
+                    # SQL服务失败时才回退到OpenRouter
+                    logger.error(f"SQL服务处理失败: {str(e)}")
+                    logger.info("回退到OpenRouter处理SQL查询...")
+                    return await self._send_to_openrouter(messages)
+            
+            elif question_type == "VISUALIZATION":
+                # 未实现可视化，使用OpenRouter并给出提示
+                logger.info("可视化功能暂未完整实现，使用OpenRouter回应")
+                return await self._send_to_openrouter(messages)
+            
+            elif question_type == "DATA_ANALYSIS":
+                # 未实现数据分析，使用OpenRouter并给出提示
+                logger.info("数据分析功能暂未完整实现，使用OpenRouter回应")
+                return await self._send_to_openrouter(messages)
+            
+            elif question_type == "HYBRID_QUERY":
+                # 使用工具服务检查是否有工具可用
+                tool_result = await tool_service.process_tool_call(user_message)
+                if tool_result:
+                    logger.info(f"使用工具服务处理: {tool_result[:30]}...")
+                    return tool_result
+                
+                # 无工具可用，使用OpenRouter
+                logger.info("没有适用的工具，使用OpenRouter回应")
+                return await self._send_to_openrouter(messages)
+            
+            else:  # GENERAL_QUERY
+                # 一般问题直接使用OpenRouter
+                logger.info("一般问题，直接使用OpenRouter回应")
+                
+                # 对于可能是部门负责人查询但被错误分类的问题进行特殊处理
+                dept_head_pattern = r'(谁是|谁担任|谁负责|谁主管|谁分管)(.*?)(负责人|部长|所长|主任|主管|的)'
+                if re.search(dept_head_pattern, user_message):
+                    logger.info("检测到可能是部门负责人查询的问题，尝试使用SQL服务处理")
+                    try:
+                        # 尝试用SQL服务处理
+                        sql_response = await sql_service.get_sql_response(user_message)
+                        return sql_response
+                    except Exception as e:
+                        logger.error(f"SQL服务处理部门负责人查询失败: {str(e)}")
+                        # 失败时回退到OpenRouter
+                
+                # 尝试检测是否包含部门名称
+                dept_patterns = [
+                    r'(大数据平台与信息部|数字经济研究所|生物经济研究所|海洋经济研究所|城市轨道与城市发展研究所|创新中心|党委办公室|合规管理部|综合协同部|战略发展与项目管理部)',
+                    r'(\w+部|\w+所|\w+中心)'
+                ]
+                
+                contains_dept = False
+                for pattern in dept_patterns:
+                    if re.search(pattern, user_message):
+                        contains_dept = True
+                        break
+                
+                if contains_dept:
+                    logger.info("检测到问题中包含部门名称，尝试使用SQL服务处理")
+                    try:
+                        # 尝试用SQL服务处理
+                        sql_response = await sql_service.get_sql_response(user_message)
+                        return sql_response
+                    except Exception as e:
+                        logger.error(f"SQL服务处理部门相关查询失败: {str(e)}")
+                        # 失败时回退到OpenRouter
+                
+                return await self._send_to_openrouter(messages)
+                
+        except Exception as e:
+            logger.error(f"混合聊天服务出错: {str(e)}")
+            # 出错时使用OpenRouter回退
+            try:
+                return await self._send_to_openrouter(messages)
+            except Exception as nested_e:
+                logger.error(f"OpenRouter回退也失败: {str(nested_e)}")
+                return "抱歉，处理您的请求时出现了问题。请稍后再试。"
+    
+    async def _send_to_openrouter(self, messages: List[ChatMessage]) -> str:
+        """发送消息到OpenRouter
+        
+        Args:
+            messages: 消息列表
+            
+        Returns:
+            OpenRouter回复
+        """
+        # 转换消息格式
+        formatted_messages = [
+            {"role": "system", "content": self.system_prompt}
+        ]
+        
+        # 添加用户消息，最多添加最近的10条
+        for msg in messages[-10:]:
+            formatted_messages.append({
+                "role": "user" if msg.role == "user" else "assistant", 
+                "content": msg.content
+            })
+        
+        # 发送到OpenRouter，使用hybrid模型
+        logger.info("发送消息到OpenRouter...")
+        response = await openrouter_service.get_chat_response(formatted_messages, model_type="hybrid")
+        logger.info(f"收到OpenRouter回复: {response[:50]}...")
         
         return response
     
@@ -270,7 +371,7 @@ tool: analyze_age_distribution
             full_messages.append({"role": "system", "content": tool_result_message})
             
             # 生成最终回复
-            final_response = openrouter_service.get_chat_response(full_messages)
+            final_response = await openrouter_service.get_chat_response(full_messages)
             
             # 清理回复
             final_response = self._clean_response(final_response)

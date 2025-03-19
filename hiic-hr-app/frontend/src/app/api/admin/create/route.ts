@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import axios from 'axios';
 
 export async function POST(request: Request) {
   try {
@@ -13,33 +13,21 @@ export async function POST(request: Request) {
       );
     }
 
-    // 创建用户账号
-    const { data, error } = await supabase.auth.signUp({
+    // 调用后端API创建管理员账号
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const response = await axios.post(`${apiUrl}/api/admin/create`, {
       email,
-      password,
-      options: {
-        data: {
-          role: 'admin'
-        }
-      }
+      password
     });
-
-    if (error) {
-      console.error('创建管理员账号失败:', error);
-      return NextResponse.json(
-        { error: error.message || '创建管理员账号失败' },
-        { status: 500 }
-      );
-    }
 
     return NextResponse.json({
       message: '管理员账号创建成功',
-      user: data.user
+      user: response.data.user
     });
   } catch (error: any) {
     console.error('创建管理员账号失败:', error);
     return NextResponse.json(
-      { error: error.message || '创建管理员账号失败' },
+      { error: error.response?.data?.detail || '创建管理员账号失败' },
       { status: 500 }
     );
   }

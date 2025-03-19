@@ -5,6 +5,201 @@ import inspect
 from app.services.data_analysis_service import hr_data_analysis
 from app.db.supabase import supabase_client
 
+class HRToolService:
+    """HR工具服务，提供工具调用功能"""
+    
+    def __init__(self):
+        """初始化HR工具服务"""
+        # 工具函数映射
+        self.tools = {
+            "get_employee_by_name": self.get_employee_by_name,
+            "get_employees_by_department": self.get_employees_by_department,
+            "get_birth_stats": self.get_birth_stats,
+            "get_basic_stats": self.get_basic_stats,
+            "analyze_department": self.analyze_department,
+            "visualization": self.visualization,
+            "search_employee": self.search_employee
+        }
+    
+    def get_tools_description(self) -> str:
+        """获取工具描述的格式化文本"""
+        descriptions = [
+            "1. get_employee_by_name - 通过姓名查询员工的详细信息\n   参数: name (员工姓名)",
+            "2. get_employees_by_department - 获取指定部门的所有员工\n   参数: department (部门名称)",
+            "3. get_birth_stats - 获取员工生日统计信息\n   参数: month (可选，特定月份)",
+            "4. get_basic_stats - 获取基本统计信息\n   参数: column (可选，特定统计列)",
+            "5. analyze_department - 分析部门情况\n   参数: department (部门名称)",
+            "6. visualization - 生成数据可视化\n   参数: type (图表类型，可选值: department_distribution, gender_distribution, age_distribution, education_distribution)",
+            "7. search_employee - 搜索员工\n   参数: keyword (搜索关键词)"
+        ]
+        return "\n\n".join(descriptions)
+    
+    async def execute_tool(self, tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+        """执行指定的工具
+        
+        Args:
+            tool_name: 工具名称
+            parameters: 工具参数
+            
+        Returns:
+            工具执行结果
+        """
+        if tool_name not in self.tools:
+            return {"error": f"未知工具: {tool_name}"}
+        
+        try:
+            # 执行工具
+            tool_func = self.tools[tool_name]
+            result = tool_func(**parameters)
+            return result
+        except Exception as e:
+            return {"error": f"工具执行失败: {str(e)}"}
+    
+    def get_employee_by_name(self, name: str) -> Dict[str, Any]:
+        """通过姓名查询员工的详细信息"""
+        try:
+            employee = supabase_client.get_employee_by_name(name)
+            if not employee:
+                return {"status": "error", "message": f"未找到名为 {name} 的员工"}
+            return {"status": "success", "employee": employee}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+    
+    def get_employees_by_department(self, department: str) -> Dict[str, Any]:
+        """获取指定部门的所有员工"""
+        try:
+            employees = supabase_client.get_department_employees(department)
+            if not employees:
+                return {"status": "error", "message": f"未找到 {department} 部门或该部门没有员工"}
+            return {"status": "success", "department": department, "employees": employees, "count": len(employees)}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+    
+    def get_birth_stats(self, month: Optional[int] = None) -> Dict[str, Any]:
+        """获取员工生日统计信息"""
+        try:
+            if month:
+                employees = supabase_client.get_employees_with_birthday_in_month(month)
+                return {
+                    "status": "success", 
+                    "month": month, 
+                    "employees": employees, 
+                    "count": len(employees)
+                }
+            else:
+                stats = supabase_client.get_birthday_stats()
+                return {"status": "success", "stats": stats}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+    
+    def get_basic_stats(self, column: Optional[str] = None) -> Dict[str, Any]:
+        """获取基本统计信息"""
+        try:
+            if column == "gender":
+                stats = supabase_client.get_gender_stats()
+                return {"status": "success", "column": "gender", "stats": stats}
+            elif column == "age":
+                stats = supabase_client.get_age_stats()
+                return {"status": "success", "column": "age", "stats": stats}
+            elif column == "education":
+                stats = supabase_client.get_education_stats()
+                return {"status": "success", "column": "education", "stats": stats}
+            elif column == "department":
+                stats = supabase_client.get_department_stats()
+                return {"status": "success", "column": "department", "stats": stats}
+            else:
+                # 获取所有基本统计
+                gender_stats = supabase_client.get_gender_stats()
+                age_stats = supabase_client.get_age_stats()
+                education_stats = supabase_client.get_education_stats()
+                department_stats = supabase_client.get_department_stats()
+                
+                return {
+                    "status": "success",
+                    "gender": gender_stats,
+                    "age": age_stats,
+                    "education": education_stats,
+                    "department": department_stats,
+                    "total_employees": len(supabase_client.get_employees())
+                }
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+    
+    def analyze_department(self, department: str) -> Dict[str, Any]:
+        """分析部门情况"""
+        try:
+            # 获取部门员工
+            employees = supabase_client.get_department_employees(department)
+            if not employees:
+                return {"status": "error", "message": f"未找到 {department} 部门或该部门没有员工"}
+            
+            # 性别分布
+            gender_counts = {"男": 0, "女": 0, "未知": 0}
+            for emp in employees:
+                gender = emp.get("gender", "未知")
+                gender_counts[gender] = gender_counts.get(gender, 0) + 1
+            
+            # 年龄统计
+            ages = [emp.get("age", 0) for emp in employees if emp.get("age", 0) > 0]
+            avg_age = sum(ages) / len(ages) if ages else 0
+            
+            # 学历分布
+            education_counts = {}
+            for emp in employees:
+                education = emp.get("education", "未知")
+                education_counts[education] = education_counts.get(education, 0) + 1
+            
+            # 职位分布
+            position_counts = {}
+            for emp in employees:
+                position = emp.get("position", "未知")
+                position_counts[position] = position_counts.get(position, 0) + 1
+            
+            return {
+                "status": "success",
+                "department": department,
+                "total_employees": len(employees),
+                "gender_distribution": gender_counts,
+                "average_age": round(avg_age, 1),
+                "education_distribution": education_counts,
+                "position_distribution": position_counts
+            }
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+    
+    def visualization(self, type: str) -> Dict[str, Any]:
+        """生成数据可视化"""
+        try:
+            if type == "department_distribution":
+                stats = supabase_client.get_department_stats()
+                return {"status": "success", "type": type, "data": stats, "visualization_url": "/api/visualizations/department_distribution"}
+            elif type == "gender_distribution":
+                stats = supabase_client.get_gender_stats()
+                return {"status": "success", "type": type, "data": stats, "visualization_url": "/api/visualizations/gender_distribution"}
+            elif type == "age_distribution":
+                stats = supabase_client.get_age_stats()
+                return {"status": "success", "type": type, "data": stats, "visualization_url": "/api/visualizations/age_distribution"}
+            elif type == "education_distribution":
+                stats = supabase_client.get_education_stats()
+                return {"status": "success", "type": type, "data": stats, "visualization_url": "/api/visualizations/education_distribution"}
+            else:
+                return {"status": "error", "message": f"不支持的可视化类型: {type}"}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+    
+    def search_employee(self, keyword: str) -> Dict[str, Any]:
+        """搜索员工"""
+        try:
+            employees = supabase_client.search_employees(keyword)
+            return {
+                "status": "success",
+                "keyword": keyword,
+                "results": employees,
+                "count": len(employees)
+            }
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
 class ToolService:
     """工具服务，提供各种HR分析工具"""
     
