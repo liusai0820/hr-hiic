@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import PageLayout from '@/components/PageLayout';
 import { chatApi } from '@/api/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../lib/supabase';
 import Image from 'next/image';
 import { getAvatarByAgeAndGender } from '@/utils/avatarUtils';
 

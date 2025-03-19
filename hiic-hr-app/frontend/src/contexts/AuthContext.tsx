@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, supabase } from '@/lib/supabase';
+import { auth, supabase } from '../lib/supabase';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 
 // 定义认证上下文类型
