@@ -23,6 +23,13 @@ interface User {
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  source?: 'database' | 'knowledge_base' | 'unknown' | 'system';
+  metadata?: {
+    queryType?: 'sql' | 'general' | 'unknown' | 'system' | 'error';
+    hasRealData: boolean;
+    lastUpdated?: string;
+    confidence: number;
+  };
 }
 
 export default function ChatPage() {
@@ -30,7 +37,13 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: '您好！我是中心HR助手 Cool ，请问有什么可以帮助您的？'
+      content: '您好！我是中心HR助手 Cool ，请问有什么可以帮助您的？',
+      source: 'system',
+      metadata: {
+        queryType: 'system',
+        hasRealData: true,
+        confidence: 1
+      }
     }
   ]);
   const [input, setInput] = useState('');
@@ -40,25 +53,19 @@ export default function ChatPage() {
   const [localUser, setLocalUser] = useState<any>(null);
   const [showExamples, setShowExamples] = useState(true);
   const [apiHealthy, setApiHealthy] = useState<boolean | null>(null);
+  const [timeOfDay, setTimeOfDay] = useState('');
+  const [requestInProgress, setRequestInProgress] = useState(false);
 
-  // 添加超时保护，防止页面卡在加载状态
+  // 移除原有的isLoading超时保护
+  // 添加请求状态追踪
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout | null = null;
-    
-    if (isLoading) {
-      timeoutId = setTimeout(() => {
-        console.log('聊天页面 - 检测到加载状态超时，自动重置');
-        setIsLoading(false);
-        setPageError('请求超时，请重试');
-      }, 15000); // 15秒超时
+    if (!requestInProgress) {
+      setIsLoading(false);
+      setPageError(null);
     }
-    
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [isLoading]);
+  }, [requestInProgress]);
 
-  // 添加认证加载超时保护
+  // 认证超时保护调整为10秒
   useEffect(() => {
     let authTimeoutId: NodeJS.Timeout | null = null;
     
@@ -66,7 +73,7 @@ export default function ChatPage() {
       authTimeoutId = setTimeout(() => {
         console.log('聊天页面 - 检测到认证加载状态超时，强制渲染页面');
         setForceRender(true);
-      }, 3000); // 3秒超时
+      }, 10000); // 10秒超时
     }
     
     return () => {
@@ -246,78 +253,147 @@ export default function ChatPage() {
     }
   }, []);
 
-  const handleSendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+  // 添加获取时间段的useEffect
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      setTimeOfDay('morning');
+    } else if (hour >= 12 && hour < 18) {
+      setTimeOfDay('afternoon');
+    } else {
+      setTimeOfDay('evening');
+    }
+  }, []);
 
-    // 隐藏示例问题
+  const handleSendMessage = async () => {
+    if (!input.trim() || requestInProgress) return;
+
     setShowExamples(false);
-    
-    // 重置错误状态
     setPageError(null);
+    setIsLoading(true);
+    setRequestInProgress(true);
+
+    const userMessage: Message = { 
+      role: 'user', 
+      content: input,
+      metadata: {
+        queryType: 'unknown',
+        hasRealData: true,
+        confidence: 1
+      }
+    };
     
-    // 添加用户消息
-    const userMessage: Message = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
-    setIsLoading(true);
+
+    const apiMessages = messages.concat(userMessage).map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }));
+
+    // 优化的重试配置
+    const maxRetries = 3;
+    const baseTimeout = 90000;
+    const maxTimeout = 240000;
+    let currentTry = 0;
+
+    const sendWithTimeout = async (timeout: number): Promise<any> => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      try {
+        const response = await Promise.race([
+          chatApi.sendMessage(apiMessages),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('请求超时')), timeout)
+          )
+        ]);
+        
+        clearTimeout(timeoutId);
+        return response;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
+      }
+    };
 
     try {
-      console.log('聊天页面 - 准备发送消息:', input);
-      
-      // 准备发送到API的消息格式
-      const apiMessages = messages.concat(userMessage).map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
-
-      // 添加超时处理
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
-      
-      try {
-        // 调用API
-        console.log('聊天页面 - 开始调用聊天API');
-        
-        // 使用try-catch包装API调用，防止未捕获的错误导致页面跳转
-        let response;
+      while (currentTry <= maxRetries) {
         try {
-          response = await chatApi.sendMessage(apiMessages);
-          console.log('聊天页面 - API调用成功:', response);
-        } catch (apiCallError: any) {
-          console.error('聊天页面 - API调用出错:', apiCallError);
-          throw new Error(`API调用失败: ${apiCallError.message || '未知错误'}`);
-        }
-        
-        clearTimeout(timeoutId);
-        
-        if (!response) {
-          console.error('聊天页面 - API返回空响应');
-          throw new Error('服务器返回空响应');
-        }
-        
-        // 添加AI回复
-        console.log('聊天页面 - 添加AI回复到消息列表');
-        setMessages(prev => [...prev, { role: 'assistant', content: response }]);
-      } catch (apiError: any) {
-        clearTimeout(timeoutId);
-        console.error('聊天页面 - API错误:', apiError);
-        
-        if (apiError.name === 'AbortError') {
-          console.error('聊天页面 - API请求超时');
-          setMessages(prev => [...prev, { role: 'assistant', content: '抱歉，请求超时。请检查您的网络连接并重试。' }]);
-        } else {
-          // 显示具体错误信息
-          const errorMessage = apiError.response?.data?.message || apiError.message || '未知错误';
-          console.error('聊天页面 - 详细错误信息:', errorMessage);
-          setMessages(prev => [...prev, { role: 'assistant', content: `抱歉，发生错误: ${errorMessage}` }]);
+          console.log(`聊天页面 - 第${currentTry + 1}次尝试发送消息`);
+          
+          const timeout = Math.min(baseTimeout * (currentTry + 1), maxTimeout);
+          console.log(`聊天页面 - 当前超时设置: ${timeout/1000}秒`);
+          
+          const response = await sendWithTimeout(timeout);
+          
+          if (!response || !response.data) {
+            throw new Error('暂无相关数据');
+          }
+
+          // 验证响应数据的可信度
+          const { content, metadata } = response.data;
+          
+          if (!metadata?.hasRealData) {
+            throw new Error('无法提供准确数据');
+          }
+
+          setMessages(prev => [...prev, { 
+            role: 'assistant', 
+            content: content,
+            source: metadata.source || 'unknown',
+            metadata: {
+              queryType: metadata.queryType || 'unknown',
+              hasRealData: metadata.hasRealData,
+              lastUpdated: metadata.lastUpdated,
+              confidence: metadata.confidence || 0
+            }
+          }]);
+          break;
+
+        } catch (error: any) {
+          console.error(`聊天页面 - 第${currentTry + 1}次尝试失败:`, error);
+
+          if (currentTry === maxRetries) {
+            throw error;
+          }
+
+          const waitTime = Math.min(3000 * (currentTry + 1), 15000);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          currentTry++;
         }
       }
     } catch (error: any) {
-      console.error('聊天页面 - 发送消息失败:', error);
-      setMessages(prev => [...prev, { role: 'assistant', content: '抱歉，我遇到了一些问题，无法回答您的问题。请稍后再试。' }]);
+      let errorMessage = '抱歉，我暂时无法回答这个问题。';
+      
+      if (error.name === 'AbortError' || error.message === '请求超时') {
+        errorMessage = '抱歉，这个问题需要较长处理时间。建议：\n' +
+          '1. 稍后重试\n' +
+          '2. 将问题拆分得更具体\n' +
+          '3. 检查网络连接';
+      } else if (error.message.includes('数据库')) {
+        errorMessage = '数据库访问异常，请稍后再试。';
+      } else if (error.message.includes('权限')) {
+        errorMessage = '您可能没有权限访问这些信息。';
+      } else if (error.message.includes('无法提供准确数据')) {
+        errorMessage = '抱歉，我无法为这个问题提供准确的数据。请尝试询问具体的、可查询的信息。';
+      } else if (error.message.includes('无数据')) {
+        errorMessage = '未找到相关数据。如有疑问，请联系管理员。';
+      }
+
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: errorMessage,
+        source: 'system',
+        metadata: {
+          queryType: 'error',
+          hasRealData: false,
+          confidence: 0
+        }
+      }]);
     } finally {
-      console.log('聊天页面 - 消息处理完成，重置加载状态');
       setIsLoading(false);
+      setRequestInProgress(false);
     }
   };
 
@@ -342,6 +418,14 @@ export default function ChatPage() {
       age: 年龄 || 30
     };
   };
+
+  // 更高级的示例问题
+  const advancedExamples = [
+    '查看25岁以下员工名单',
+    '统计各部门人数',
+    '多少人是水瓶座',
+    '今年有哪些人将达成司龄10年成就'
+  ];
 
   // 如果页面出错，显示错误信息和重试按钮
   if (pageError) {
@@ -410,88 +494,91 @@ export default function ChatPage() {
 
   return (
     <PageLayout>
-      <div className="w-full min-h-[calc(100vh-var(--header-height))] flex flex-col bg-gray-50 dark:bg-gray-900">
+      <div className="w-full min-h-[calc(100vh-var(--header-height))] flex flex-col bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
         {/* 顶部导航栏 */}
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
-          <div className="content-container py-8">
-            <h1 className="text-3xl font-bold">AI对话</h1>
-            <p className="mt-2 text-blue-100">基于HR数据回答您的问题，提供智能化的人力资源分析</p>
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+          <div className="content-container py-6">
+            <h1 className="text-2xl font-bold">AI 智能助手</h1>
+            <p className="mt-1 text-sm text-blue-100">为您提供专业的人力资源解答</p>
           </div>
         </div>
         
         {/* 主体内容区 */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* 左侧边栏 */}
-          <div className="w-48 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hidden md:block">
-            <div className="p-3">
-              <div className="flex flex-col space-y-1">
-                <div className="px-3 py-2 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-medium text-left">
-                  AI对话
-                </div>
-                <div className="px-3 py-2 text-gray-500 dark:text-gray-400 text-xs">
-                  基于HR数据的智能问答
-                </div>
-                <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 px-3">
-                    示例问题
-                  </div>
-                  <div className="space-y-1">
-                    {[
-                      '公司有多少员工？',
-                      '各部门的人数分布如何？',
-                      '员工的平均年龄是多少？',
-                      '男女比例是多少？'
-                    ].map((question, index) => (
-                      <button
+        <div className="flex-1 flex overflow-hidden">
+          {/* 左侧历史记录 */}
+          <div className="w-64 border-r border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hidden lg:block">
+            <div className="h-full flex flex-col">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">历史记录</h3>
+              </div>
+              
+              {/* 聊天历史 */}
+              <div className="flex-1 overflow-y-auto p-4">
+                <div className="space-y-2">
+                  {messages.map((msg, index) => (
+                    msg.role === 'user' && (
+                      <div
                         key={index}
-                        className="w-full px-3 py-1.5 text-left text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                        onClick={() => handleExampleClick(question)}
+                        onClick={() => handleExampleClick(msg.content)}
+                        className="p-2 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md cursor-pointer truncate"
                       >
-                        {question}
-                      </button>
-                    ))}
-                  </div>
+                        {msg.content}
+                      </div>
+                    )
+                  ))}
                 </div>
-                {/* 左侧边栏底部状态指示器 */}
-                <div className="mt-auto pt-4 px-3">
-                  {apiHealthy === true && (
-                    <div className="flex items-center text-xs text-green-500">
+              </div>
+
+              {/* 系统状态 */}
+              <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center text-xs">
+                  {apiHealthy ? (
+                    <>
                       <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                      API服务正常
-                    </div>
-                  )}
-                  {apiHealthy === false && (
-                    <div className="flex items-center text-xs text-red-500">
+                      <span className="text-green-500">系统运行正常</span>
+                    </>
+                  ) : (
+                    <>
                       <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                      API服务异常
-                    </div>
-                  )}
-                  {apiHealthy === null && (
-                    <div className="flex items-center text-xs text-gray-400">
-                      <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
-                      正在检查API状态
-                    </div>
+                      <span className="text-red-500">系统异常</span>
+                    </>
                   )}
                 </div>
               </div>
             </div>
           </div>
-          
-          {/* 主聊天区域 */}
+
+          {/* 中间聊天区域 */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* 欢迎信息 */}
+            {/* 消息列表区域 */}
             <div className="flex-1 overflow-y-auto p-4">
               <div className="max-w-3xl mx-auto">
+                {/* 欢迎信息 */}
                 {messages.length === 1 && (
-                  <div className="text-center my-12">
-                    <h2 className="text-3xl font-medium text-gray-800 dark:text-white mb-6">
-                      <span className="text-green-500">Good</span> <span className="text-green-500">afternoon</span>, 
-                      <span className="text-gray-400 ml-2">{user?.email?.split('@')[0] || localUser?.email?.split('@')[0] || '用户'}</span>!
+                  <div className="text-center my-8">
+                    <h2 className="text-3xl font-medium mb-8">
+                      <span className="text-green-600">Good</span> <span className="text-gray-400">{timeOfDay}</span>
+                      <span className="text-gray-600">, {user?.user_metadata?.姓名 || user?.email?.split('@')[0] || 'Guest'}</span>!
                     </h2>
+                    
+                    {/* 示例问题 */}
+                    {showExamples && (
+                      <div className="max-w-2xl mx-auto grid grid-cols-2 gap-4 px-4">
+                        {advancedExamples.map((question, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleExampleClick(question)}
+                            className="text-center p-3 text-sm text-gray-600 bg-white/90 hover:bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 backdrop-blur-sm w-full"
+                          >
+                            {question}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
-                
-                {/* 消息列表 */}
+
+                {/* 对话消息 */}
                 <div className="space-y-6">
                   {messages.map((message, index) => (
                     <div 
@@ -499,31 +586,41 @@ export default function ChatPage() {
                       className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       {message.role === 'assistant' && (
-                        <div className="h-8 w-8 rounded-full bg-blue-600 flex-shrink-0 mr-3 flex items-center justify-center overflow-hidden mt-1">
+                        <div className="h-8 w-8 rounded-full bg-blue-600 flex-shrink-0 mr-3 flex items-center justify-center">
                           <Image 
                             src="/images/animal_chara_radio_penguin.png" 
                             alt="HR助手" 
                             width={32} 
                             height={32}
-                            className="object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0wIDE4Yy00LjQxIDAtOC0zLjU5LTgtOHMzLjU5LTggOC04IDggMy41OSA4IDgtMy41OSA4LTggOHptMC0xNGMtMi42NyAwLTUuMiAxLjUzLTYuMzIgNGgyLjY4Yy44NC0xLjE5IDIuMjEtMiAzLjY0LTIgMS4xMSAwIDIuMTIuNDEgMi45MSAxLjA5bDEuNDEtMS40MUMxNC44OCA2LjY0IDEzLjUxIDYgMTIgNnptNi4zMiA0SDEzLjY4QzEyLjg0IDguODEgMTEuNDcgOCAxMCA4Yy0xLjExIDAtMi4xMi40MS0yLjkxIDEuMDlMNS42OCA3LjY4QzYuODggNi42NCA4LjI1IDYgOS43NiA2YzIuNjcgMCA1LjIgMS41MyA2LjMyIDR6Ii8+PC9zdmc+';
-                            }}
+                            className="rounded-full"
                           />
                         </div>
                       )}
                       <div 
-                        className={`max-w-[85%] md:max-w-[75%] ${
+                        className={`max-w-[80%] rounded-lg px-4 py-2 ${
                           message.role === 'user' 
-                            ? 'bg-blue-500 text-white' 
-                            : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200'
-                        } rounded-lg px-4 py-3 shadow-sm`}
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
+                        }`}
                       >
-                        {message.content}
+                        <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                        {message.role === 'assistant' && message.metadata && (
+                          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {message.metadata.hasRealData ? (
+                              <span className="text-green-600">✓ 数据来源可信</span>
+                            ) : (
+                              <span className="text-yellow-600">⚠️ 仅供参考</span>
+                            )}
+                            {message.metadata.lastUpdated && (
+                              <span className="ml-2">
+                                更新时间: {new Date(message.metadata.lastUpdated).toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                       {message.role === 'user' && (
-                        <div className="h-8 w-8 rounded-full bg-gray-300 flex-shrink-0 ml-3 flex items-center justify-center overflow-hidden mt-1">
+                        <div className="h-8 w-8 rounded-full bg-gray-200 flex-shrink-0 ml-3 flex items-center justify-center">
                           <Image 
                             src={getAvatarByAgeAndGender(
                               getUserMetadata(user || localUser).age,
@@ -532,33 +629,26 @@ export default function ChatPage() {
                             alt="用户" 
                             width={32} 
                             height={32}
-                            className="object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzljOWM5YyI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MyLjY3IDAgOCAyIDggMnMtNS4zMyA1LjMzLTggNS4zM1M0IDcgNCA3czUuMzMtMiA4LTJ6bTAgMTJjLTIuNjcgMC01LjMzLS42Ny01LjMzLS42N3YtMi42N2MwLTIuNjcgMi42Ny00IDUuMzMtNCAyLjY3IDAgNS4zMyAxLjMzIDUuMzMgNHYyLjY3cy0yLjY3LjY3LTUuMzMuNjd6Ii8+PC9zdmc+';
-                            }}
+                            className="rounded-full"
                           />
                         </div>
                       )}
                     </div>
                   ))}
-                  
+
+                  {/* 加载状态 */}
                   {isLoading && (
                     <div className="flex justify-start">
-                      <div className="h-8 w-8 rounded-full bg-blue-600 flex-shrink-0 mr-3 flex items-center justify-center overflow-hidden mt-1">
+                      <div className="h-8 w-8 rounded-full bg-blue-600 flex-shrink-0 mr-3 flex items-center justify-center">
                         <Image 
                           src="/images/animal_chara_radio_penguin.png" 
                           alt="HR助手" 
                           width={32} 
                           height={32}
-                          className="object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0wIDE4Yy00LjQxIDAtOC0zLjU5LTgtOHMzLjU5LTggOC04IDggMy41OSA4IDgtMy41OSA4LTggOHptMC0xNGMtMi42NyAwLTUuMiAxLjUzLTYuMzIgNGgyLjY4Yy44NC0xLjE5IDIuMjEtMiAzLjY0LTIgMS4xMSAwIDIuMTIuNDEgMi45MSAxLjA5bDEuNDEtMS40MUMxNC44OCA2LjY0IDEzLjUxIDYgMTIgNnptNi4zMiA0SDEzLjY4QzEyLjg0IDguODEgMTEuNDcgOCAxMCA4Yy0xLjExIDAtMi4xMi40MS0yLjkxIDEuMDlMNS42OCA3LjY4QzYuODggNi42NCA4LjI1IDYgOS43NiA2YzIuNjcgMCA1LjIgMS41MyA2LjMyIDR6Ii8+PC9zdmc+';
-                          }}
+                          className="rounded-full"
                         />
                       </div>
-                      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3 shadow-sm max-w-[85%] md:max-w-[75%]">
+                      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2">
                         <div className="flex space-x-2">
                           <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"></div>
                           <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
@@ -568,91 +658,32 @@ export default function ChatPage() {
                     </div>
                   )}
                 </div>
-                
-                {/* 如果没有消息或只有初始消息，显示示例问题 */}
-                {showExamples && messages.length <= 1 && (
-                  <div className="mt-8 mb-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
-                      {[
-                        '公司有多少员工？',
-                        '各部门的人数分布如何？',
-                        '员工的平均年龄是多少？',
-                        '男女比例是多少？'
-                      ].map((question, index) => (
-                        <button
-                          key={index}
-                          className="text-left p-3 rounded-md bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-300 transition-colors duration-200 border border-gray-200 dark:border-gray-700 shadow-sm"
-                          onClick={() => handleExampleClick(question)}
-                        >
-                          {question}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
-            
-            {/* 底部输入区域 */}
+
+            {/* 输入区域 */}
             <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
               <div className="max-w-3xl mx-auto">
-                <div className="relative">
-                  <div className="flex items-end">
-                    <div className="relative flex-grow">
-                      <textarea
-                        className="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 resize-none transition-all duration-200"
-                        placeholder="请输入您的问题..."
-                        rows={1}
-                        value={input}
-                        onChange={(e) => {
-                          setInput(e.target.value);
-                          // 自动调整高度
-                          e.target.style.height = 'auto';
-                          e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-                        }}
-                        onKeyDown={handleKeyDown}
-                        disabled={isLoading}
-                        style={{ minHeight: '44px', maxHeight: '120px' }}
-                      />
-                      <div className="absolute right-3 bottom-3 flex space-x-1 text-gray-400">
-                        <button className="p-1 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                    <button
-                      className={`ml-3 h-11 w-11 rounded-lg flex items-center justify-center transition-all duration-200 ${
-                        isLoading || !input.trim() 
-                          ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed' 
-                          : 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white'
-                      }`}
-                      onClick={handleSendMessage}
-                      disabled={isLoading || !input.trim()}
-                    >
-                      {isLoading ? (
-                        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                  <div className="mt-2 flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
-                    <div>请输入您的问题，按Enter发送</div>
-                    <div className="flex space-x-2">
-                      <button className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="输入您的问题..."
+                    className="flex-1 px-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 dark:focus:border-blue-600 bg-white dark:bg-gray-900"
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={isLoading || !input.trim()}
+                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                      isLoading || !input.trim()
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    发送
+                  </button>
                 </div>
               </div>
             </div>
