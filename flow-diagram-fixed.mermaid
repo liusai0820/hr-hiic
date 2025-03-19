@@ -1,0 +1,47 @@
+graph TD
+    %% 前端流程 - 简化版
+    A["用户输入问题"] --> B{"前端验证"}
+    B -->|为空/处理中| A
+    B -->|验证通过| C["开始处理"]
+    C --> D["准备消息"]
+    D --> E["发送请求"]
+    E --> F{"API调用"}
+    F -->|成功| H["处理响应"]
+    F -->|失败| G["重试机制"]
+    G -->|重试| F
+    G -->|超出重试次数| Z["错误处理"]
+    
+    %% 错误类型
+    Z --> Z1["超时"]
+    Z --> Z2["权限"]
+    Z --> Z3["数据库"]
+    Z --> Z4["无数据"]
+    
+    %% 后端流程 - 简化版
+    I["后端处理"] --> J{"问题分类"}
+    J -->|SQL类| K["SQL生成"]
+    J -->|对话类| N["对话处理"]
+    
+    K --> L["执行查询"]
+    L --> M["处理结果"]
+    
+    N --> O["生成回复"]
+    
+    M --> P["响应格式化"]
+    O --> P
+    P --> Q["返回结果"]
+    
+    %% 连接前后端
+    A -.-> I
+    Q -.-> H
+    
+    %% 样式定义
+    classDef primary fill:#4285F4,stroke:none,color:white
+    classDef decision fill:#FBBC05,stroke:none,color:black
+    classDef process fill:#34A853,stroke:none,color:white
+    classDef error fill:#EA4335,stroke:none,color:white
+    
+    class A,I primary
+    class B,F,J,G decision
+    class C,D,E,K,L,M,N,O,P,Q process
+    class Z,Z1,Z2,Z3,Z4 error

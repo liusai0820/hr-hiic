@@ -37,8 +37,8 @@ async def health_check():
 
 # 包含API路由
 app.include_router(router, prefix="/api")
-app.include_router(chat_router, prefix="/chat")
-app.include_router(visualizations_router)  # 可视化路由已经包含了/api/visualizations前缀
+app.include_router(chat_router, prefix="/api/chat")
+app.include_router(visualizations_router, prefix="/api")
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 
 # 根路径
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     
     # 配置uvicorn服务器
     uvicorn.run(
-        "app.main:app", 
+        "main:app", 
         host="0.0.0.0", 
         port=settings.API_PORT,
         reload=settings.DEBUG,
