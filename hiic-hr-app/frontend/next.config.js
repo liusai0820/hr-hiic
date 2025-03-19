@@ -2,22 +2,48 @@
 const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
+    if (!process.env.NEXT_PUBLIC_API_URL) {
+      return [
+        {
+          source: '/api/:path*',
+          destination: 'http://localhost:8000/api/:path*',
+        },
+        {
+          source: '/health',
+          destination: 'http://localhost:8000/health',
+        },
+        {
+          source: '/docs',
+          destination: 'http://localhost:8000/docs',
+        },
+        {
+          source: '/openapi.json',
+          destination: 'http://localhost:8000/openapi.json',
+        },
+      ];
+    }
+
+    // 确保API URL以http://或https://开头
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL.startsWith('http') 
+      ? process.env.NEXT_PUBLIC_API_URL 
+      : `https://${process.env.NEXT_PUBLIC_API_URL}`;
+
     return [
       {
         source: '/api/:path*',
-        destination: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/:path*` : 'http://localhost:8000/api/:path*',
+        destination: `${apiUrl}/api/:path*`,
       },
       {
         source: '/health',
-        destination: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/health` : 'http://localhost:8000/health',
+        destination: `${apiUrl}/health`,
       },
       {
         source: '/docs',
-        destination: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/docs` : 'http://localhost:8000/docs',
+        destination: `${apiUrl}/docs`,
       },
       {
         source: '/openapi.json',
-        destination: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/openapi.json` : 'http://localhost:8000/openapi.json',
+        destination: `${apiUrl}/openapi.json`,
       },
     ];
   },
