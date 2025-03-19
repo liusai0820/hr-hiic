@@ -286,15 +286,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // 强制保存会话到localStorage和cookie
       if (data.session) {
         try {
-          // 创建一个简化的会话对象
+          // 创建一个类型安全的会话对象
           const sessionData = {
-            access_token: data.session.access_token,
-            refresh_token: data.session.refresh_token,
             user: {
-              id: data.user.id,
-              email: data.user.email,
-              user_metadata: data.user.user_metadata
+              id: data.user?.id || '',
+              email: data.user?.email,
+              user_metadata: data.user?.user_metadata || {}
             },
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token || '',
             expires_at: data.session.expires_at || Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30
           };
           

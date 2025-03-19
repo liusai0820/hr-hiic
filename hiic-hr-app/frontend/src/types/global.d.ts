@@ -3,7 +3,7 @@ interface Window {
   hiicHrSession?: {
     user: {
       id: string;
-      email: string;
+      email?: string;
       user_metadata?: {
         姓名?: string;
         性别?: string;
@@ -14,7 +14,7 @@ interface Window {
     };
     access_token: string;
     refresh_token?: string;
-    expires_at?: string;
+    expires_at?: number | string;
   };
   hiicHrAuthInitialized?: boolean;
 } 
