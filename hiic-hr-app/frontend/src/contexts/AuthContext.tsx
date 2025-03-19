@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, supabase } from '../lib/supabase';
+import { supabase } from '@/utils/supabaseClient';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 
 // 定义认证上下文类型
@@ -342,7 +342,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       setError(null);
-      const { error: signUpError } = await auth.signUpWithEmail(email, password);
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
       
       if (signUpError) {
         throw new Error(signUpError.message);
@@ -431,7 +434,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       setError(null);
-      const { error } = await auth.resetPassword(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
       if (error) throw error;
     } catch (err: any) {
       console.error('重置密码失败:', err);
