@@ -30,6 +30,11 @@ app.add_middleware(
     expose_headers=["*"],  # 暴露所有头部
 )
 
+# 健康检查端点
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "message": "Service is healthy"}
+
 # 包含API路由
 app.include_router(router, prefix="/api")
 app.include_router(chat_router, prefix="/chat")
