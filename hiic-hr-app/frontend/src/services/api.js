@@ -1,7 +1,7 @@
 // 获取所有可视化数据
 export const getAllVisualizations = async () => {
   try {
-    const response = await fetch('/api/visualizations');
+    const response = await fetch('/api/api/visualizations');
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || '获取可视化数据失败');
@@ -16,7 +16,7 @@ export const getAllVisualizations = async () => {
 // 获取特定可视化分类下的员工列表
 export const getVisualizationEmployees = async (visualizationType, category) => {
   try {
-    const response = await fetch(`/api/visualizations/employees/${visualizationType}?category=${encodeURIComponent(category)}`);
+    const response = await fetch(`/api/api/visualizations/employees/${visualizationType}?category=${encodeURIComponent(category)}`);
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || '获取员工列表失败');
@@ -46,7 +46,7 @@ export const getAllEmployees = async () => {
 // 获取统计数据
 export const getStats = async () => {
   try {
-    const response = await fetch('/api/stats');
+    const response = await fetch('/api/api/visualizations/stats');
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || '获取统计数据失败');

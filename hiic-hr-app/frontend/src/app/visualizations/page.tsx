@@ -200,8 +200,8 @@ export default function VisualizationsPage() {
         setLoading(true);
         console.log('开始获取可视化数据...');
         
-        // 直接使用fetch而不是通过API服务
-        const response = await fetch('/api/visualizations');
+        // 更新API路径
+        const response = await fetch('/api/api/visualizations');
         if (!response.ok) {
           throw new Error(`获取可视化数据失败: ${response.status} ${response.statusText}`);
         }
@@ -1179,7 +1179,7 @@ export default function VisualizationsPage() {
     
     try {
       console.log(`正在获取${visualizationType}类型下的${category}分类员工列表...`);
-      const response = await fetch(`/api/visualizations/employees/${visualizationType}?category=${encodeURIComponent(category)}`);
+      const response = await fetch(`/api/api/visualizations/employees/${visualizationType}?category=${encodeURIComponent(category)}`);
       
       if (!response.ok) {
         const errorText = await response.text();

@@ -57,8 +57,7 @@ export default function Home() {
       setLoadingBirthdays(true);
       setBirthdayError("");
       
-      // 修改API URL，确保正确访问后端API
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://hr-hiic-production.up.railway.app';
       console.log(`正在获取本月生日员工数据，API URL: ${apiUrl}/api/birthdays/current-month`);
       
       const response = await fetch(`${apiUrl}/api/birthdays/current-month`);
@@ -132,8 +131,8 @@ export default function Home() {
     try {
       setLoadingStats(true);
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      console.log(`正在获取统计数据，API URL: ${apiUrl}/api/stats`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://hr-hiic-production.up.railway.app';
+      console.log(`正在获取统计数据，API URL: ${apiUrl}/api/api/visualizations/stats`);
       
       // 获取员工总数
       const employeesResponse = await fetch(`${apiUrl}/api/employees`);
@@ -143,7 +142,7 @@ export default function Home() {
       const employeesData = await employeesResponse.json();
       
       // 获取可视化数据（包含部门数量）
-      const visualizationsResponse = await fetch(`${apiUrl}/api/visualizations/`);
+      const visualizationsResponse = await fetch(`${apiUrl}/api/api/visualizations`);
       if (!visualizationsResponse.ok) {
         throw new Error(`获取可视化数据失败: ${visualizationsResponse.status}`);
       }
@@ -300,7 +299,7 @@ export default function Home() {
         {/* 英雄区域 */}
         <section className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
           <div className="content-container flex flex-col items-center justify-center py-12 md:py-16 text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">嘿！我是HR小助手 😊</h1>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">嘿！我是HR小助手 </h1>
             <p className="text-xl md:text-2xl max-w-3xl mb-6 opacity-90">
               有问题随时问我，轻松工作，快乐每一天~
             </p>
