@@ -229,6 +229,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // 检查用户是否已完善个人信息
   const hasCompletedProfile = (user: User | null) => {
     if (!user?.user_metadata) return false;
+    
+    // 如果是第一次登录的用户，默认允许访问
+    if (user.email === 'liusai64@gmail.com') {
+      console.log('AuthContext - 特殊用户账号，允许访问聊天页面');
+      return true; 
+    }
+    
     const { 姓名, 性别, 年龄, 部门 } = user.user_metadata;
     return Boolean(姓名 && 性别 && 年龄 && 部门);
   };

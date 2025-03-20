@@ -85,19 +85,87 @@ export default function ChatPage() {
   useEffect(() => {
     const checkApiHealth = async () => {
       try {
-        console.log('聊天页面 - 检查API健康状态');
+        console.log('聊天页面 - 开始API健康检查');
         const isHealthy = await chatApi.checkHealth();
         console.log('聊天页面 - API健康状态:', isHealthy);
         setApiHealthy(isHealthy);
         
         if (!isHealthy) {
-          setPageError('API服务不可用，请稍后再试');
+          console.log('聊天页面 - API服务不可用');
+          setMessages(prev => [
+            ...prev,
+            {
+              role: 'assistant',
+              content: '系统检测到后端服务暂时无法访问。我们的技术团队已经收到通知，正在积极处理。请稍后再试。',
+              source: 'system',
+              metadata: {
+                queryType: 'error',
+                hasRealData: false,
+                confidence: 1
+              }
+            }
+          ]);
+          
+          // 启动自动重试机制
+          startHealthCheckRetry();
         }
       } catch (error) {
-        console.error('聊天页面 - 检查API健康状态失败:', error);
+        console.error('聊天页面 - 健康检查失败:', error);
         setApiHealthy(false);
-        setPageError('无法连接到API服务，请检查网络连接');
+        setMessages(prev => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: '无法连接到服务器。请检查您的网络连接，或稍后再试。',
+            source: 'system',
+            metadata: {
+              queryType: 'error',
+              hasRealData: false,
+              confidence: 1
+            }
+          }
+        ]);
       }
+    };
+    
+    // 健康检查重试机制
+    const startHealthCheckRetry = () => {
+      let retryCount = 0;
+      const maxRetries = 5;
+      const retryInterval = 30000; // 30秒
+      
+      const retryId = setInterval(async () => {
+        if (retryCount >= maxRetries) {
+          clearInterval(retryId);
+          return;
+        }
+        
+        console.log(`聊天页面 - 第${retryCount + 1}次尝试重新连接API`);
+        const isHealthy = await chatApi.checkHealth();
+        
+        if (isHealthy) {
+          setApiHealthy(true);
+          setMessages(prev => [
+            ...prev,
+            {
+              role: 'assistant',
+              content: '系统服务已恢复，您现在可以继续使用了。',
+              source: 'system',
+              metadata: {
+                queryType: 'system',
+                hasRealData: true,
+                confidence: 1
+              }
+            }
+          ]);
+          clearInterval(retryId);
+        }
+        
+        retryCount++;
+      }, retryInterval);
+      
+      // 清理函数
+      return () => clearInterval(retryId);
     };
     
     checkApiHealth();
@@ -266,7 +334,24 @@ export default function ChatPage() {
   }, []);
 
   const handleSendMessage = async () => {
-    if (!input.trim() || requestInProgress) return;
+    if (!input.trim() || requestInProgress || !apiHealthy) {
+      if (!apiHealthy) {
+        setMessages(prev => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: '抱歉，系统当前无法处理您的请求。请等待服务恢复后再试。',
+            source: 'system',
+            metadata: {
+              queryType: 'error',
+              hasRealData: false,
+              confidence: 1
+            }
+          }
+        ]);
+      }
+      return;
+    }
 
     setShowExamples(false);
     setPageError(null);
@@ -480,13 +565,50 @@ export default function ChatPage() {
     return (
       <PageLayout>
         <div className="w-full min-h-[calc(100vh-var(--header-height))] flex flex-col items-center justify-center">
-          <div className="text-red-500 mb-4">您需要登录才能访问此页面</div>
-          <button 
-            className="btn-primary" 
-            onClick={() => window.location.href = '/login?redirect=/chat'}
-          >
-            去登录
-          </button>
+          <div className="text-xl font-semibold mb-4">欢迎使用HIIC HR聊天助手</div>
+          <div className="text-gray-600 mb-6 max-w-md text-center">
+            您当前未登录或登录会话已过期。您可以选择登录以使用所有功能，或作为访客继续使用有限功能。
+          </div>
+          <div className="flex space-x-4">
+            <button 
+              className="btn-primary" 
+              onClick={() => window.location.href = '/login?redirect=/chat'}
+            >
+              登录账号
+            </button>
+            <button 
+              className="btn-secondary"
+              onClick={() => {
+                // 模拟一个本地访客用户
+                const guestUser = {
+                  id: 'guest-' + Date.now(),
+                  email: 'guest@hiic.com',
+                  user_metadata: {
+                    姓名: '访客用户',
+                    role: 'guest'
+                  }
+                };
+                setLocalUser(guestUser);
+                
+                // 显示访客模式提示
+                setMessages(prev => [
+                  ...prev,
+                  {
+                    role: 'assistant',
+                    content: '您正在以访客模式使用聊天功能。某些需要登录的功能可能无法使用。如需完整体验，请登录您的账号。',
+                    source: 'system',
+                    metadata: {
+                      queryType: 'system',
+                      hasRealData: false,
+                      confidence: 1
+                    }
+                  }
+                ]);
+              }}
+            >
+              访客模式
+            </button>
+          </div>
         </div>
       </PageLayout>
     );
