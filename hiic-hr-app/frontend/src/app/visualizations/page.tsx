@@ -200,8 +200,9 @@ export default function VisualizationsPage() {
         setLoading(true);
         console.log('开始获取可视化数据...');
         
-        // 更新API路径
-        const response = await fetch('/api/api/visualizations');
+        // 更新API路径，添加完整URL和末尾斜杠
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://hr-hiic-production.up.railway.app';
+        const response = await fetch(`${apiUrl}/api/api/visualizations/`);
         if (!response.ok) {
           throw new Error(`获取可视化数据失败: ${response.status} ${response.statusText}`);
         }
@@ -1179,7 +1180,9 @@ export default function VisualizationsPage() {
     
     try {
       console.log(`正在获取${visualizationType}类型下的${category}分类员工列表...`);
-      const response = await fetch(`/api/api/visualizations/employees/${visualizationType}?category=${encodeURIComponent(category)}`);
+      // 更新API路径，添加完整URL
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://hr-hiic-production.up.railway.app';
+      const response = await fetch(`${apiUrl}/api/api/visualizations/employees/${visualizationType}?category=${encodeURIComponent(category)}`);
       
       if (!response.ok) {
         const errorText = await response.text();
